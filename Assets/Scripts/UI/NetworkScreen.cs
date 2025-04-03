@@ -1,42 +1,42 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Net;
 using UnityEngine.UI;
-using System.Net;
 
-public class NetworkScreen : MonoBehaviourSingleton<NetworkScreen>
+namespace UI
 {
-    public Button connectBtn;
-    public Button startServerBtn;
-    public InputField portInputField;
-    public InputField addressInputField;
-
-    protected override void Initialize()
+    public class NetworkScreen : MonoBehaviourSingleton<NetworkScreen>
     {
-        connectBtn.onClick.AddListener(OnConnectBtnClick);
-        startServerBtn.onClick.AddListener(OnStartServerBtnClick);
-    }
+        public Button connectBtn;
+        public Button startServerBtn;
+        public InputField portInputField;
+        public InputField addressInputField;
 
-    void OnConnectBtnClick()
-    {
-        IPAddress ipAddress = IPAddress.Parse(addressInputField.text);
-        int port = System.Convert.ToInt32(portInputField.text);
+        protected override void Initialize()
+        {
+            connectBtn.onClick.AddListener(OnConnectBtnClick);
+            startServerBtn.onClick.AddListener(OnStartServerBtnClick);
+        }
 
-        NetworkManager.Instance.StartClient(ipAddress, port);
+        void OnConnectBtnClick()
+        {
+            IPAddress ipAddress = IPAddress.Parse(addressInputField.text);
+            int port = System.Convert.ToInt32(portInputField.text);
+
+            NetworkManager.Instance.StartClient(ipAddress, port);
         
-        SwitchToChatScreen();
-    }
+            SwitchToChatScreen();
+        }
 
-    void OnStartServerBtnClick()
-    {
-        int port = System.Convert.ToInt32(portInputField.text);
-        NetworkManager.Instance.StartServer(port);
-        SwitchToChatScreen();
-    }
+        void OnStartServerBtnClick()
+        {
+            int port = System.Convert.ToInt32(portInputField.text);
+            NetworkManager.Instance.StartServer(port);
+            SwitchToChatScreen();
+        }
 
-    void SwitchToChatScreen()
-    {
-        ChatScreen.Instance.gameObject.SetActive(true);
-        this.gameObject.SetActive(false);
+        void SwitchToChatScreen()
+        {
+            ChatScreen.Instance.gameObject.SetActive(true);
+            this.gameObject.SetActive(false);
+        }
     }
 }

@@ -1,35 +1,37 @@
 ﻿using System.Net;
 using UnityEngine.UI;
 
-public class ChatScreen : MonoBehaviourSingleton<ChatScreen>
+namespace UI
 {
-    public Text messages;
-    public InputField inputMessage;
-
-    protected override void Initialize()
+    public class ChatScreen : MonoBehaviourSingleton<ChatScreen>
     {
-        inputMessage.onEndEdit.AddListener(OnEndEdit);
+        public Text messages;
+        public InputField inputMessage;
 
-        this.gameObject.SetActive(false);
-
-        NetworkManager.Instance.OnReceiveEvent += OnReceiveDataEvent;
-    }
-
-    void OnReceiveDataEvent(byte[] data, IPEndPoint ep)
-    {
-        if (NetworkManager.Instance.isServer)
+        protected override void Initialize()
         {
-            NetworkManager.Instance.Broadcast(data);
+            inputMessage.onEndEdit.AddListener(OnEndEdit);
+
+            this.gameObject.SetActive(false);
+
+            NetworkManager.Instance.OnReceiveEvent += OnReceiveDataEvent;
         }
 
-        messages.text += System.Text.ASCIIEncoding.UTF8.GetString(data) + System.Environment.NewLine;
-    }
-
-    void OnEndEdit(string str)
-    {
-        if (inputMessage.text != "")
+        void OnReceiveDataEvent(byte[] data, IPEndPoint ep)
         {
-            if (NetworkManager.Instance.isServer)
+            if (NetworkManager.Instance.IsServer)
+            {
+                NetworkManager.Instance.Broadcast(data);
+            }
+
+            messages.text += System.Text.ASCIIEncoding.UTF8.GetString(data) + System.Environment.NewLine;
+        }
+
+        void OnEndEdit(string str)
+        {
+            if (inputMessage.text == "") return;
+
+            if (NetworkManager.Instance.IsServer)
             {
                 NetworkManager.Instance.Broadcast(System.Text.ASCIIEncoding.UTF8.GetBytes(inputMessage.text));
                 messages.text += inputMessage.text + System.Environment.NewLine;
@@ -43,7 +45,5 @@ public class ChatScreen : MonoBehaviourSingleton<ChatScreen>
             inputMessage.Select();
             inputMessage.text = "";
         }
-
     }
-
 }

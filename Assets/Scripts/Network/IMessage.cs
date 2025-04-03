@@ -1,94 +1,94 @@
-using System.Collections.Generic;
-using System.IO;
-using UnityEngine;
 using System;
-using System.Text;
-using System.Net;
+using System.Collections.Generic;
+using UnityEngine;
 
-public enum MessageType
+namespace Network
 {
-    HandShake = -1,
-    Console = 0,
-    Position = 1
-}
-
-public interface IMessage<T>
-{
-    public MessageType GetMessageType();
-    public byte[] Serialize();
-    public T Deserialize(byte[] message);
-}
-
-public class NetHandShake : IMessage<(long, int)>
-{
-    (long, int) data;
-    public (long, int) Deserialize(byte[] message)
+    public enum MessageType
     {
-        (long, int) outData;
-
-        outData.Item1 = BitConverter.ToInt64(message, 4);
-        outData.Item2 = BitConverter.ToInt32(message, 12);
-
-        return outData;
+        HandShake = -1,
+        Console = 0,
+        Position = 1
     }
 
-    public MessageType GetMessageType()
+    public interface IMessage<T>
     {
-       return MessageType.HandShake;
+        public MessageType GetMessageType();
+        public byte[] Serialize();
+        public T Deserialize(byte[] message);
     }
 
-    public byte[] Serialize()
+    public class NetHandShake : IMessage<(long, int)>
     {
-        List<byte> outData = new List<byte>();
+        private (long, int) _data;
+        public (long, int) Deserialize(byte[] message)
+        {
+            (long, int) outData;
 
-        outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
+            outData.Item1 = BitConverter.ToInt64(message, 4);
+            outData.Item2 = BitConverter.ToInt32(message, 12);
 
-        outData.AddRange(BitConverter.GetBytes(data.Item1));
-        outData.AddRange(BitConverter.GetBytes(data.Item2));
+            return outData;
+        }
+
+        public MessageType GetMessageType()
+        {
+            return MessageType.HandShake;
+        }
+
+        public byte[] Serialize()
+        {
+            List<byte> outData = new List<byte>();
+
+            outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
+
+            outData.AddRange(BitConverter.GetBytes(_data.Item1));
+            outData.AddRange(BitConverter.GetBytes(_data.Item2));
 
 
-        return outData.ToArray();
-    }
-}
-
-public class NetVector3 : IMessage<UnityEngine.Vector3>
-{
-    private static ulong lastMsgID = 0;
-    private Vector3 data;
-
-    public NetVector3(Vector3 data)
-    {
-        this.data = data;
-    }
-
-    public Vector3 Deserialize(byte[] message)
-    {
-        Vector3 outData;
-
-        outData.x = BitConverter.ToSingle(message, 8);
-        outData.y = BitConverter.ToSingle(message, 12);
-        outData.z = BitConverter.ToSingle(message, 16);
-
-        return outData;
+            return outData.ToArray();
+        }
     }
 
-    public MessageType GetMessageType()
+    public class NetVector3 : IMessage<UnityEngine.Vector3>
     {
-        return MessageType.Position;
+        private static ulong _lastMsgID = 0;
+        private readonly Vector3 _data;
+
+        public NetVector3(Vector3 data)
+        {
+            this._data = data;
+        }
+
+        public Vector3 Deserialize(byte[] message)
+        {
+            Vector3 outData;
+
+            outData.x = BitConverter.ToSingle(message, 8);
+            outData.y = BitConverter.ToSingle(message, 12);
+            outData.z = BitConverter.ToSingle(message, 16);
+
+            return outData;
+        }
+
+        public MessageType GetMessageType()
+        {
+            return MessageType.Position;
+        }
+
+        public byte[] Serialize()
+        {
+            List<byte> outData = new List<byte>();
+
+            outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
+            outData.AddRange(BitConverter.GetBytes(_lastMsgID++));
+            outData.AddRange(BitConverter.GetBytes(_data.x));
+            outData.AddRange(BitConverter.GetBytes(_data.y));
+            outData.AddRange(BitConverter.GetBytes(_data.z));
+
+            return outData.ToArray();
+        }
+
+        //Dictionary<Client,Dictionary<msgType,int>>
     }
-
-    public byte[] Serialize()
-    {
-        List<byte> outData = new List<byte>();
-
-        outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
-        outData.AddRange(BitConverter.GetBytes(lastMsgID++));
-        outData.AddRange(BitConverter.GetBytes(data.x));
-        outData.AddRange(BitConverter.GetBytes(data.y));
-        outData.AddRange(BitConverter.GetBytes(data.z));
-
-        return outData.ToArray();
-    }
-
-    //Dictionary<Client,Dictionary<msgType,int>>
 }

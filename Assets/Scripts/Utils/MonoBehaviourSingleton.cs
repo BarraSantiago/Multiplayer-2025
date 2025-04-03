@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class MonoBehaviourSingleton<T> : MonoBehaviour where T : MonoBehaviourSingleton<T>
 {
@@ -10,7 +8,7 @@ public class MonoBehaviourSingleton<T> : MonoBehaviour where T : MonoBehaviourSi
     {
         get 
         {
-            if (instance == null)
+            if (!instance)
                 instance = FindObjectOfType<MonoBehaviourSingleton<T>>();
 
             return (T)instance;
@@ -24,8 +22,7 @@ public class MonoBehaviourSingleton<T> : MonoBehaviour where T : MonoBehaviourSi
 
     private void Awake()
     {
-        if (instance != null)
-            Destroy(this.gameObject);
+        if (instance) Destroy(this.gameObject);
 
         instance = this;
 

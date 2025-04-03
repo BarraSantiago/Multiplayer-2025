@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using Network;
+using Network.interfaces;
 using UnityEngine;
 
 public struct Client
@@ -19,103 +21,86 @@ public struct Client
 
 public class NetworkManager : MonoBehaviourSingleton<NetworkManager>, IReceiveData
 {
-    public IPAddress ipAddress
-    {
-        get; private set;
-    }
+    public IPAddress IPAddress { get; private set; }
 
-    public int port
-    {
-        get; private set;
-    }
+    public int Port { get; private set; }
 
-    public bool isServer
-    {
-        get; private set;
-    }
+    public bool IsServer { get; private set; }
 
     public int TimeOut = 30;
 
     public Action<byte[], IPEndPoint> OnReceiveEvent;
 
-    private UdpConnection connection;
+    private UdpConnection _connection;
 
-    private readonly Dictionary<int, Client> clients = new Dictionary<int, Client>();
-    private readonly Dictionary<IPEndPoint, int> ipToId = new Dictionary<IPEndPoint, int>();
+    private readonly Dictionary<int, Client> _clients = new Dictionary<int, Client>();
+    private readonly Dictionary<IPEndPoint, int> _ipToId = new Dictionary<IPEndPoint, int>();
 
-    int clientId = 0; // This id should be generated during first handshake
+    private int _clientId = 0; // This id should be generated during first handshake
 
     public void StartServer(int port)
     {
-        isServer = true;
-        this.port = port;
-        connection = new UdpConnection(port, this);
+        IsServer = true;
+        this.Port = port;
+        _connection = new UdpConnection(port, this);
     }
 
     public void StartClient(IPAddress ip, int port)
     {
-        isServer = false;
+        IsServer = false;
 
-        this.port = port;
-        this.ipAddress = ip;
+        this.Port = port;
+        this.IPAddress = ip;
 
-        connection = new UdpConnection(ip, port, this);
+        _connection = new UdpConnection(ip, port, this);
 
         AddClient(new IPEndPoint(ip, port));
     }
 
-    void AddClient(IPEndPoint ip)
+    private void AddClient(IPEndPoint ip)
     {
-        if (!ipToId.ContainsKey(ip))
-        {
-            Debug.Log("Adding client: " + ip.Address);
+        if (_ipToId.ContainsKey(ip)) return;
+        Debug.Log("Adding client: " + ip.Address);
 
-            int id = clientId;
-            ipToId[ip] = clientId;
+        int id = _clientId;
+        _ipToId[ip] = _clientId;
 
-            clients.Add(clientId, new Client(ip, id, Time.realtimeSinceStartup));
+        _clients.Add(_clientId, new Client(ip, id, Time.realtimeSinceStartup));
 
-            clientId++;
-        }
+        _clientId++;
     }
 
-    void RemoveClient(IPEndPoint ip)
+    private void RemoveClient(IPEndPoint ip)
     {
-        if (ipToId.ContainsKey(ip))
-        {
-            Debug.Log("Removing client: " + ip.Address);
-            clients.Remove(ipToId[ip]);
-        }
+        if (!_ipToId.ContainsKey(ip)) return;
+        Debug.Log("Removing client: " + ip.Address);
+        _clients.Remove(_ipToId[ip]);
     }
 
     public void OnReceiveData(byte[] data, IPEndPoint ip)
     {
         AddClient(ip);
 
-        if (OnReceiveEvent != null)
-            OnReceiveEvent.Invoke(data, ip);
+        OnReceiveEvent?.Invoke(data, ip);
     }
 
     public void SendToServer(byte[] data)
     {
-        connection.Send(data);
+        _connection.Send(data);
     }
 
     public void Broadcast(byte[] data)
     {
-        using (var iterator = clients.GetEnumerator())
+        using Dictionary<int, Client>.Enumerator iterator = _clients.GetEnumerator();
+        while (iterator.MoveNext())
         {
-            while (iterator.MoveNext())
-            {
-                connection.Send(data, iterator.Current.Value.ipEndPoint);
-            }
+            _connection.Send(data, iterator.Current.Value.ipEndPoint);
         }
     }
 
-    void Update()
+    private void Update()
     {
         // Flush the data in main thread
-        if (connection != null)
-            connection.FlushReceiveData();
+        _connection?.FlushReceiveData();
     }
 }
