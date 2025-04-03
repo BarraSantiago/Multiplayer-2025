@@ -19,17 +19,12 @@ namespace UI
             NetworkManager.Instance.OnReceiveEvent += OnReceiveDataEvent;
         }
 
-        void OnReceiveDataEvent(byte[] data, IPEndPoint ep)
+        private void OnReceiveDataEvent(byte[] data, IPEndPoint ep)
         {
-            if (NetworkManager.Instance.IsServer)
-            {
-                NetworkManager.Instance.Broadcast(data);
-            }
-
             messages.text += System.Text.ASCIIEncoding.UTF8.GetString(data) + System.Environment.NewLine;
         }
 
-        void OnEndEdit(string str)
+        private void OnEndEdit(string str)
         {
             if (inputMessage.text == "") return;
 

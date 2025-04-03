@@ -50,11 +50,15 @@ namespace Network
         }
     }
 
-    public class NetVector3 : IMessage<UnityEngine.Vector3>
+    public class NetVector3 : IMessage<Vector3>
     {
         private static ulong _lastMsgID = 0;
         private readonly Vector3 _data;
 
+        public NetVector3()
+        {
+            _data = new Vector3();
+        }
         public NetVector3(Vector3 data)
         {
             this._data = data;
@@ -88,7 +92,81 @@ namespace Network
 
             return outData.ToArray();
         }
+        
+        public byte[] Serialize(Vector3 newData)
+        {
+            List<byte> outData = new List<byte>();
 
+            outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
+            outData.AddRange(BitConverter.GetBytes(_lastMsgID++));
+            outData.AddRange(BitConverter.GetBytes(newData.x));
+            outData.AddRange(BitConverter.GetBytes(newData.y));
+            outData.AddRange(BitConverter.GetBytes(newData.z));
+
+            return outData.ToArray();
+        }
         //Dictionary<Client,Dictionary<msgType,int>>
+    }
+    
+    public class NetPlayers : IMessage<Dictionary<int, Vector3>>
+    {
+        public Dictionary<int, GameObject> Data;
+
+        public NetPlayers()
+        {
+            Data = new Dictionary<int, GameObject>();
+        }
+        
+        public MessageType GetMessageType()
+        {
+            return MessageType.HandShake; 
+        }
+
+        public byte[] Serialize()
+        {
+            List<byte> outData = new List<byte>();
+
+            outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
+            outData.AddRange(BitConverter.GetBytes(Data.Count));
+
+            foreach (KeyValuePair<int, GameObject> kvp in Data)
+            {
+                outData.AddRange(BitConverter.GetBytes(kvp.Key));
+                Vector3 position = kvp.Value.transform.position;
+                outData.AddRange(BitConverter.GetBytes(position.x));
+                outData.AddRange(BitConverter.GetBytes(position.y));
+                outData.AddRange(BitConverter.GetBytes(position.z));
+            }
+
+            return outData.ToArray();
+        }
+
+        public Dictionary<int, Vector3> Deserialize(byte[] message)
+        {
+            Dictionary<int, Vector3> outData = new Dictionary<int, Vector3>();
+
+            int offset = 4; // Skip the MessageType
+            int count = BitConverter.ToInt32(message, offset);
+            offset += 4;
+
+            for (int i = 0; i < count; i++)
+            {
+                int key = BitConverter.ToInt32(message, offset);
+                offset += 4;
+
+                float x = BitConverter.ToSingle(message, offset);
+                offset += 4;
+                float y = BitConverter.ToSingle(message, offset);
+                offset += 4;
+                float z = BitConverter.ToSingle(message, offset);
+                offset += 4;
+
+                Vector3 position = new Vector3(x, y, z);
+
+                outData[key] = position;
+            }
+
+            return outData;
+        }
     }
 }
