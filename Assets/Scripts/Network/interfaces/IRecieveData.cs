@@ -4,6 +4,6 @@ namespace Network.interfaces
 {
     public interface IReceiveData
     {
-        void OnReceiveData(byte[] data, IPEndPoint ipEndpoint);
+        public void OnReceiveData(byte[] data, IPEndPoint ipEndpoint);
     }
 }

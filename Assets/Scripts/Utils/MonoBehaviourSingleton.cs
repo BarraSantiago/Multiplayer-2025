@@ -1,31 +1,34 @@
 ﻿using UnityEngine;
 
-public class MonoBehaviourSingleton<T> : MonoBehaviour where T : MonoBehaviourSingleton<T>
+namespace Utils
 {
-    private static MonoBehaviourSingleton<T> instance = null;
-
-    public static T Instance
+    public class MonoBehaviourSingleton<T> : MonoBehaviour where T : MonoBehaviourSingleton<T>
     {
-        get 
+        private static MonoBehaviourSingleton<T> _instance = null;
+
+        public static T Instance
         {
-            if (!instance)
-                instance = FindObjectOfType<MonoBehaviourSingleton<T>>();
+            get 
+            {
+                if (!_instance)
+                    _instance = FindObjectOfType<MonoBehaviourSingleton<T>>();
 
-            return (T)instance;
+                return (T)_instance;
+            }
         }
-    }
 
-    protected virtual void Initialize()
-    {
+        protected virtual void Initialize()
+        {
 
-    }
+        }
 
-    private void Awake()
-    {
-        if (instance) Destroy(this.gameObject);
+        private void Awake()
+        {
+            if (_instance) Destroy(this.gameObject);
 
-        instance = this;
+            _instance = this;
 
-        Initialize();
+            Initialize();
+        }
     }
 }

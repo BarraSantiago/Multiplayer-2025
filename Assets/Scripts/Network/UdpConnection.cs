@@ -15,10 +15,10 @@ namespace Network
         }
 
         private readonly UdpClient _connection;
-        private IReceiveData _receiver = null;
-        private Queue<DataReceived> _dataReceivedQueue = new Queue<DataReceived>();
+        private readonly IReceiveData _receiver = null;
+        private readonly Queue<DataReceived> _dataReceivedQueue = new Queue<DataReceived>();
 
-        private object _handler = new object();
+        private readonly object _handler = new object();
 
         public UdpConnection(int port, IReceiveData receiver = null)
         {
@@ -56,7 +56,7 @@ namespace Network
             }
         }
 
-        void OnReceive(IAsyncResult ar)
+        private void OnReceive(IAsyncResult ar)
         {
             try
             {
