@@ -61,7 +61,7 @@ namespace Network
             this.IPAddress = ip;
 
             _connection = new UdpConnection(ip, port, this);
-            GameObject player = Instantiate(PlayerPrefab);
+            GameObject player = new GameObject();
             player.AddComponent<Player>();
             AddClient(new IPEndPoint(ip, port));
             SendToServer(null, MessageType.HandShake);

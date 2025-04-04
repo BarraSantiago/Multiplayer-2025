@@ -69,9 +69,9 @@ namespace Network
         {
             Vector3 outData;
 
-            outData.x = BitConverter.ToSingle(message, 8);
-            outData.y = BitConverter.ToSingle(message, 12);
-            outData.z = BitConverter.ToSingle(message, 16);
+            outData.x = BitConverter.ToSingle(message, 12);
+            outData.y = BitConverter.ToSingle(message, 16);
+            outData.z = BitConverter.ToSingle(message, 20);
 
             return outData;
         }
