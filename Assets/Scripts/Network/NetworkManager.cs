@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using Game;
 using Network.interfaces;
+using Network.Messages;
 using UnityEngine;
 using Utils;
 

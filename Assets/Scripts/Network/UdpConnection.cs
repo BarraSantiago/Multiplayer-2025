@@ -73,6 +73,7 @@ namespace Network
                 // This happens when a client disconnects, as we fail to send to that port.
                 UnityEngine.Debug.LogError("[UdpConnection] " + e.Message);
             }
+            
 
             _connection.BeginReceive(OnReceive, null);
         }
