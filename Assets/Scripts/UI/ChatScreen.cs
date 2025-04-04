@@ -17,11 +17,17 @@ namespace UI
             this.gameObject.SetActive(false);
 
             NetworkManager.Instance.OnReceiveEvent += OnReceiveDataEvent;
+            NetworkManager.Instance.OnReceiveMessageEvent += OnReceiveMessage;
         }
 
         private void OnReceiveDataEvent(byte[] data, IPEndPoint ep)
         {
             messages.text += System.Text.ASCIIEncoding.UTF8.GetString(data) + System.Environment.NewLine;
+        }
+        
+        private void OnReceiveMessage(string message)
+        {
+            messages.text += message + System.Environment.NewLine;
         }
 
         private void OnEndEdit(string str)
@@ -30,12 +36,11 @@ namespace UI
 
             if (NetworkManager.Instance.IsServer)
             {
-                NetworkManager.Instance.Broadcast(System.Text.ASCIIEncoding.UTF8.GetBytes(inputMessage.text));
                 messages.text += inputMessage.text + System.Environment.NewLine;
             }
             else
             {
-                NetworkManager.Instance.SendToServer(System.Text.ASCIIEncoding.UTF8.GetBytes(inputMessage.text));
+                NetworkManager.Instance.SendToServer(inputMessage.text, MessageType.Console);
             }
 
             inputMessage.ActivateInputField();

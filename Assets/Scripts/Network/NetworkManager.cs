@@ -33,6 +33,7 @@ namespace Network
         public int TimeOut = 30;
 
         public Action<byte[], IPEndPoint> OnReceiveEvent;
+        public Action<string> OnReceiveMessageEvent;
 
         private UdpConnection _connection;
 
@@ -43,6 +44,8 @@ namespace Network
         private int _clientId = 0; // This id should be generated during first handshake
         private NetVector3 _netVector3 = new NetVector3();
         private NetPlayers _netPlayers = new NetPlayers();
+        private NetString _netString = new NetString();
+
         public void StartServer(int port)
         {
             IsServer = true;
@@ -106,6 +109,7 @@ namespace Network
                 Debug.LogError($"Failed to deserialize data from {ip.Address}");
             }
         }
+
         private void ServerUseData(byte[] data, IPEndPoint ip, MessageType messageType)
         {
             switch (messageType)
@@ -127,11 +131,13 @@ namespace Network
                     {
                         Debug.LogError($"Player with id {_ipToId[ip]} not found.");
                     }
+
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(messageType), messageType, null);
             }
         }
+
         private void ClientUseData(byte[] data, int id, MessageType messageType)
         {
             switch (messageType)
@@ -145,8 +151,10 @@ namespace Network
                         newplayer.transform.position = kvp.Value;
                         _players.Add(kvp.Key, newplayer);
                     }
+
                     break;
                 case MessageType.Console:
+                    OnReceiveMessageEvent?.Invoke(_netString.Deserialize(data));
                     break;
                 case MessageType.Position:
                     Vector3 pos = _netVector3.Deserialize(data);
@@ -158,6 +166,7 @@ namespace Network
                     {
                         Debug.LogError($"Player with id {id} not found.");
                     }
+
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(messageType), messageType, null);
@@ -182,12 +191,20 @@ namespace Network
 
         public void SendToServer(object data, MessageType messageType)
         {
-            byte[] serializedData = new byte[] { };
+            byte[] serializedData = new byte[] {};
             switch (messageType)
             {
                 case MessageType.HandShake:
                     break;
                 case MessageType.Console:
+                    if (data is string str)
+                    {
+                        serializedData = _netString.Serialize(str);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Data must be of type string for Console message type.");
+                    }
                     break;
                 case MessageType.Position:
                     if (data is Vector3 vec3)
