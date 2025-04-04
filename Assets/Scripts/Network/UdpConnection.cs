@@ -70,12 +70,25 @@ namespace Network
             }
             catch (SocketException e)
             {
-                // This happens when a client disconnects, as we fail to send to that port.
+                // Client disconnection.
                 UnityEngine.Debug.LogError("[UdpConnection] " + e.Message);
             }
-            
-
-            _connection.BeginReceive(OnReceive, null);
+            catch (Exception e)
+            {
+                // Handle any other unexpected exceptions
+                UnityEngine.Debug.LogError("[UdpConnection] Unexpected error: " + e.Message);
+            }
+            finally
+            {
+                try
+                {
+                    _connection.BeginReceive(OnReceive, null);
+                }
+                catch (Exception e)
+                {
+                    UnityEngine.Debug.LogError("[UdpConnection] Failed to continue receive loop: " + e.Message);
+                }
+            }
         }
 
         public void Send(byte[] data)
