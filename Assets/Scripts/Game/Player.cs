@@ -7,7 +7,7 @@ namespace Game
     public class Player : MonoBehaviour
     {
         public float moveSpeed = 5f;
-
+        private Vector3 _position = Vector3.zero;
         private void Update()
         {
             Move();
@@ -37,9 +37,9 @@ namespace Game
                 move += Vector3.right;
             }
 
-            move *= (moveSpeed * Time.deltaTime);
+            _position += move * (moveSpeed * Time.deltaTime);
             if (Mathf.Approximately(move.magnitude, 0f)) return;
-            NetworkManager.Instance.SendToServer(move, MessageType.Position);
+            NetworkManager.Instance.SendToServer(_position, MessageType.Position);
         }
     }
 }
