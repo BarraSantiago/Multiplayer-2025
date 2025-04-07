@@ -37,9 +37,9 @@ namespace Game
                 move += Vector3.right;
             }
 
-            transform.position += move * (moveSpeed * Time.deltaTime);
-            
-            NetworkManager.Instance.SendToServer(transform.position, MessageType.Position);
+            move *= (moveSpeed * Time.deltaTime);
+            if (Mathf.Approximately(move.magnitude, 0f)) return;
+            NetworkManager.Instance.SendToServer(move, MessageType.Position);
         }
     }
 }

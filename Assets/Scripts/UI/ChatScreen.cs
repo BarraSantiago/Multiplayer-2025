@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Network;
+﻿using Network;
 using Network.Messages;
 using UnityEngine.UI;
 using Utils;
@@ -17,15 +16,9 @@ namespace UI
 
             this.gameObject.SetActive(false);
 
-            NetworkManager.Instance.OnReceiveEvent += OnReceiveDataEvent;
-            NetworkManager.Instance.OnReceiveMessageEvent += OnReceiveMessage;
+            MessageDispatcher.OnConsoleMessageReceived += OnReceiveMessage;
         }
 
-        private void OnReceiveDataEvent(byte[] data, IPEndPoint ep)
-        {
-            messages.text += System.Text.ASCIIEncoding.UTF8.GetString(data) + System.Environment.NewLine;
-        }
-        
         private void OnReceiveMessage(string message)
         {
             messages.text += message + System.Environment.NewLine;

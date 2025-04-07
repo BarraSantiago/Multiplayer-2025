@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,11 +7,11 @@ namespace Network.Messages
 {
     public class NetPlayers : IMessage<Dictionary<int, Vector3>>
     {
-        public Dictionary<int, GameObject> Data;
+        public IReadOnlyDictionary<int, GameObject> Data;
 
         public NetPlayers()
         {
-            Data = new Dictionary<int, GameObject>();
+            Data = new ConcurrentDictionary<int, GameObject>();
         }
         
         public MessageType GetMessageType()

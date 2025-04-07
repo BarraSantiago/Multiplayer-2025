@@ -1,0 +1,147 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using Network.Messages;
+using UnityEngine;
+
+namespace Network
+{
+    public class MessageDispatcher
+    {
+        private Dictionary<MessageType, Action<byte[], IPEndPoint>> _messageHandlers;
+
+        private readonly NetVector3 _netVector3 = new NetVector3();
+        private readonly NetPlayers _netPlayers = new NetPlayers();
+        private readonly NetString _netString = new NetString();
+        private readonly NetHeartbeat _netHeartbeat = new NetHeartbeat();
+        private float _currentLatency = 0;
+        public float CurrentLatency => _currentLatency;
+        public static Action<string> OnConsoleMessageReceived;
+
+        public MessageDispatcher(PlayerManager playerManager, UdpConnection connection,
+            ClientManager clientManager, bool isServer)
+        {
+            InitializeMessageHandlers(playerManager, connection, clientManager, isServer);
+        }
+
+        private void InitializeMessageHandlers(PlayerManager playerManager, UdpConnection connection,
+            ClientManager clientManager, bool isServer)
+        {
+            _messageHandlers = new Dictionary<MessageType, Action<byte[], IPEndPoint>>
+            {
+                {
+                    MessageType.HandShake, (data, ip) =>
+                    {
+                        if (isServer)
+                        {
+                            _netPlayers.Data = playerManager.GetAllPlayers();
+                            NetworkManager.Instance.Broadcast(_netPlayers.Serialize());
+                            List<byte> newId = BitConverter.GetBytes((int)MessageType.Id).ToList();
+                            newId.AddRange(BitConverter.GetBytes(NetworkManager.Instance.GetClientId(ip)));
+                            connection.Send(newId.ToArray(), ip);
+                        }
+                        else
+                        {
+                            Dictionary<int, Vector3> newPlayersDic = _netPlayers.Deserialize(data);
+                            foreach (KeyValuePair<int, Vector3> kvp in newPlayersDic)
+                            {
+                                if (playerManager.HasPlayer(kvp.Key)) continue;
+                                playerManager.CreatePlayer(kvp.Key, kvp.Value);
+                            }
+                        }
+                    }
+                },
+                {
+                    MessageType.Console, (data, ip) =>
+                    {
+                        string message = _netString.Deserialize(data);
+                        OnConsoleMessageReceived?.Invoke(message);
+                    }
+                },
+                {
+                    MessageType.Position, (data, ip) =>
+                    {
+                        Vector3 position = _netVector3.Deserialize(data);
+                        if (clientManager.TryGetClientId(ip, out int clientId))
+                        {
+                            playerManager.UpdatePlayerPosition(clientId, position);
+                        }
+                    }
+                },
+                {
+                    MessageType.Heartbeat, (data, ip) =>
+                    {
+                        float sentTime = _netHeartbeat.Deserialize(data);
+
+                        if (!isServer)
+                        {
+                            _currentLatency = (Time.realtimeSinceStartup - sentTime) * 1000;
+
+                            connection.Send(_netHeartbeat.Serialize(), ip);
+                        }
+                    }
+                },
+                {
+                    MessageType.Id, (data, ip) =>
+                    {
+                        if(isServer) return;
+                        int clientId = BitConverter.ToInt32(data, 4);
+                    }
+                }
+            };
+        }
+
+        public bool TryDispatchMessage(byte[] data, IPEndPoint ip)
+        {
+            try
+            {
+                MessageType messageType = DeserializeMessageType(data);
+                if (_messageHandlers.TryGetValue(messageType, out Action<byte[], IPEndPoint> handler))
+                {
+                    handler(data, ip);
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[MessageDispatcher] Error dispatching message: {ex.Message}");
+                return false;
+            }
+        }
+
+        public MessageType DeserializeMessageType(byte[] data)
+        {
+            if (data == null || data.Length < 4)
+            {
+                throw new ArgumentException("[MessageDispatcher] Invalid byte array for deserialization");
+            }
+
+            int messageTypeInt = BitConverter.ToInt32(data, 0);
+            return (MessageType)messageTypeInt;
+        }
+
+        public byte[] SerializeMessage(object data, MessageType messageType)
+        {
+            switch (messageType)
+            {
+                case MessageType.HandShake:
+                    return BitConverter.GetBytes((int)MessageType.HandShake);
+                case MessageType.Console:
+                    if (data is string str) return _netString.Serialize(str);
+                    throw new ArgumentException("Data must be string for Console messages");
+
+                case MessageType.Position:
+                    if (data is Vector3 vec3) return _netVector3.Serialize(vec3);
+                    throw new ArgumentException("Data must be Vector3 for Position messages");
+
+                case MessageType.Heartbeat:
+                    return _netHeartbeat.Serialize();
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(messageType));
+            }
+        }
+    }
+}

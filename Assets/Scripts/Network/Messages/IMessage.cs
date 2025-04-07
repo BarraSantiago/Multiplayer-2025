@@ -5,7 +5,8 @@ namespace Network.Messages
         HandShake = -1,
         Console = 0,
         Position = 1,
-        Heartbeat
+        Heartbeat,
+        Id
     }
 
     public interface IMessage<T>
