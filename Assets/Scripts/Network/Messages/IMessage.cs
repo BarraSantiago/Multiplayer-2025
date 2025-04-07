@@ -2,6 +2,7 @@ namespace Network.Messages
 {
     public enum MessageType
     {
+        None = -2,
         HandShake = -1,
         Console = 0,
         Position = 1,

@@ -57,15 +57,25 @@ namespace Network
                     {
                         string message = _netString.Deserialize(data);
                         OnConsoleMessageReceived?.Invoke(message);
+                        if(isServer) NetworkManager.Instance.Broadcast(data);
                     }
                 },
                 {
                     MessageType.Position, (data, ip) =>
                     {
                         Vector3 position = _netVector3.Deserialize(data);
-                        if (clientManager.TryGetClientId(ip, out int clientId))
+                        if (isServer)
                         {
-                            playerManager.UpdatePlayerPosition(clientId, position);
+                            if (clientManager.TryGetClientId(ip, out int clientId))
+                            {
+                                playerManager.UpdatePlayerPosition(clientId, position);
+                            }
+                            data = _netVector3.Serialize(position, clientId);
+                            NetworkManager.Instance.Broadcast(data);
+                        }
+                        else
+                        {
+                            playerManager.UpdatePlayerPosition(_netVector3.GetId(data), position);
                         }
                     }
                 },
@@ -80,12 +90,14 @@ namespace Network
 
                             connection.Send(_netHeartbeat.Serialize(), ip);
                         }
+                        if(isServer) NetworkManager.Instance.Broadcast(data);
+
                     }
                 },
                 {
                     MessageType.Id, (data, ip) =>
                     {
-                        if(isServer) return;
+                        if (isServer) return;
                         int clientId = BitConverter.ToInt32(data, 4);
                     }
                 }
@@ -123,7 +135,7 @@ namespace Network
             return (MessageType)messageTypeInt;
         }
 
-        public byte[] SerializeMessage(object data, MessageType messageType)
+        public byte[] SerializeMessage(object data, MessageType messageType, int id = -1)
         {
             switch (messageType)
             {
@@ -134,7 +146,7 @@ namespace Network
                     throw new ArgumentException("Data must be string for Console messages");
 
                 case MessageType.Position:
-                    if (data is Vector3 vec3) return _netVector3.Serialize(vec3);
+                    if (data is Vector3 vec3) return _netVector3.Serialize(vec3, id);
                     throw new ArgumentException("Data must be Vector3 for Position messages");
 
                 case MessageType.Heartbeat:

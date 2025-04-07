@@ -95,11 +95,6 @@ namespace Network
 
                 _messageDispatcher.TryDispatchMessage(data, ip);
                 
-                if (IsServer)
-                {
-                    Broadcast(data);
-                }
-                
                 OnReceiveEvent?.Invoke(data, ip);
             }
             catch (Exception ex)
