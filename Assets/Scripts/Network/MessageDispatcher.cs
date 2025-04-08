@@ -88,9 +88,12 @@ namespace Network
                         {
                             _currentLatency = (Time.realtimeSinceStartup - sentTime) * 1000;
 
-                            connection.Send(_netHeartbeat.Serialize(), ip);
+                            connection.Send(_netHeartbeat.Serialize());
                         }
-                        if(isServer) NetworkManager.Instance.Broadcast(data);
+                        else
+                        {
+                            connection.Send(_netHeartbeat.Serialize());
+                        }
 
                     }
                 },
