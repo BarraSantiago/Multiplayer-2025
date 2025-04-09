@@ -90,9 +90,6 @@ namespace Network
         {
             try
             {
-                int clientId = _clientManager.AddClient(ip);
-                _clientManager.UpdateClientTimestamp(clientId);
-
                 _messageDispatcher.TryDispatchMessage(data, ip);
                 
                 OnReceiveEvent?.Invoke(data, ip);
@@ -172,7 +169,7 @@ namespace Network
 
         private void SendHeartbeat()
         {
-            byte[] heartbeatData = _messageDispatcher.SerializeMessage(null, MessageType.Heartbeat);
+            byte[] heartbeatData = _messageDispatcher.SerializeMessage(null, MessageType.Ping);
             Broadcast(heartbeatData);
         }
 

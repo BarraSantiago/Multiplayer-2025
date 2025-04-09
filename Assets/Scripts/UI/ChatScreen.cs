@@ -16,7 +16,7 @@ namespace UI
 
             this.gameObject.SetActive(false);
 
-            MessageDispatcher.OnConsoleMessageReceived += OnReceiveMessage;
+            MessageDispatcher.onConsoleMessageReceived += OnReceiveMessage;
         }
 
         private void OnReceiveMessage(string message)

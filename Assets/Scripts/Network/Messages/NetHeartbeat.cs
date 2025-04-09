@@ -12,15 +12,12 @@ namespace Network.Messages
     
         public MessageType GetMessageType()
         {
-            return MessageType.Heartbeat;
+            return MessageType.Ping;
         }
     
         public byte[] Serialize()
         {
-            List<byte> data = new List<byte>();
-            data.AddRange(BitConverter.GetBytes((int)GetMessageType()));
-            data.AddRange(BitConverter.GetBytes(Time.realtimeSinceStartup));
-            return data.ToArray();
+            return BitConverter.GetBytes((int)GetMessageType());
         }
     
         public float Deserialize(byte[] message)

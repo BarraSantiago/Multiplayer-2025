@@ -38,6 +38,20 @@ namespace Network.Messages
             return outData.ToArray();
         }
 
+        public byte[] Serialize(Vector3 pos, int id)
+        {
+            List<byte> outData = new List<byte>();
+
+            outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
+            outData.AddRange(BitConverter.GetBytes(1));
+            outData.AddRange(BitConverter.GetBytes(id));
+            outData.AddRange(BitConverter.GetBytes(pos.x));
+            outData.AddRange(BitConverter.GetBytes(pos.y));
+            outData.AddRange(BitConverter.GetBytes(pos.z));
+
+            return outData.ToArray();
+        }
+
         public Dictionary<int, Vector3> Deserialize(byte[] message)
         {
             Dictionary<int, Vector3> outData = new Dictionary<int, Vector3>();

@@ -27,8 +27,7 @@ namespace Network
 
         public int AddClient(IPEndPoint endpoint)
         {
-            if (_ipToId.ContainsKey(endpoint))
-                return _ipToId[endpoint];
+            if (_ipToId.TryGetValue(endpoint, out var client)) return client;
 
             int id = _clientIdCounter++;
             Client newClient = new Client(endpoint, id, Time.realtimeSinceStartup);

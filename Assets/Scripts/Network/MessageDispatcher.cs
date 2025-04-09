@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using Network.Messages;
@@ -17,7 +18,8 @@ namespace Network
         private readonly NetHeartbeat _netHeartbeat = new NetHeartbeat();
         private float _currentLatency = 0;
         public float CurrentLatency => _currentLatency;
-        public static Action<string> OnConsoleMessageReceived;
+        public static Action<string> onConsoleMessageReceived;
+        private float _lastPing;
 
         public MessageDispatcher(PlayerManager playerManager, UdpConnection connection,
             ClientManager clientManager, bool isServer)
@@ -35,11 +37,15 @@ namespace Network
                     {
                         if (isServer)
                         {
-                            _netPlayers.Data = playerManager.GetAllPlayers();
-                            NetworkManager.Instance.Broadcast(_netPlayers.Serialize());
+                            int clientId = clientManager.AddClient(ip);
+                            clientManager.UpdateClientTimestamp(clientId);
+                            playerManager.TryGetPlayer(clientId, out var player);
+                            NetworkManager.Instance.Broadcast(_netPlayers.Serialize(player.transform.position, clientId));
                             List<byte> newId = BitConverter.GetBytes((int)MessageType.Id).ToList();
                             newId.AddRange(BitConverter.GetBytes(NetworkManager.Instance.GetClientId(ip)));
                             connection.Send(newId.ToArray(), ip);
+                            _netPlayers.Data = playerManager.GetAllPlayers();
+                            connection.Send(_netPlayers.Serialize(), ip);
                         }
                         else
                         {
@@ -53,11 +59,11 @@ namespace Network
                     }
                 },
                 {
-                    MessageType.Console, (data, ip) =>
+                    MessageType.Console, (data, _) =>
                     {
                         string message = _netString.Deserialize(data);
-                        OnConsoleMessageReceived?.Invoke(message);
-                        if(isServer) NetworkManager.Instance.Broadcast(data);
+                        onConsoleMessageReceived?.Invoke(message);
+                        if (isServer) NetworkManager.Instance.Broadcast(data);
                     }
                 },
                 {
@@ -70,6 +76,7 @@ namespace Network
                             {
                                 playerManager.UpdatePlayerPosition(clientId, position);
                             }
+
                             data = _netVector3.Serialize(position, clientId);
                             NetworkManager.Instance.Broadcast(data);
                         }
@@ -80,25 +87,26 @@ namespace Network
                     }
                 },
                 {
-                    MessageType.Heartbeat, (data, ip) =>
+                    MessageType.Ping, (_, ip) =>
                     {
-                        float sentTime = _netHeartbeat.Deserialize(data);
-
                         if (!isServer)
                         {
-                            _currentLatency = (Time.realtimeSinceStartup - sentTime) * 1000;
+                            _currentLatency = (Time.realtimeSinceStartup - _lastPing) * 1000;
+                            _lastPing = Time.realtimeSinceStartup;
 
                             connection.Send(_netHeartbeat.Serialize());
                         }
                         else
                         {
-                            connection.Send(_netHeartbeat.Serialize());
-                        }
+                            if (!clientManager.TryGetClientId(ip, out int clientId)) return;
+                            clientManager.UpdateClientTimestamp(clientId);
 
+                            connection.Send(_netHeartbeat.Serialize(), ip);
+                        }
                     }
                 },
                 {
-                    MessageType.Id, (data, ip) =>
+                    MessageType.Id, (data, _) =>
                     {
                         if (isServer) return;
                         int clientId = BitConverter.ToInt32(data, 4);
@@ -152,7 +160,7 @@ namespace Network
                     if (data is Vector3 vec3) return _netVector3.Serialize(vec3, id);
                     throw new ArgumentException("Data must be Vector3 for Position messages");
 
-                case MessageType.Heartbeat:
+                case MessageType.Ping:
                     return _netHeartbeat.Serialize();
                 default:
                     throw new ArgumentOutOfRangeException(nameof(messageType));
