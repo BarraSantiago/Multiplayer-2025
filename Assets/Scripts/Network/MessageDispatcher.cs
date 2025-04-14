@@ -16,6 +16,8 @@ namespace Network
         private readonly NetPlayers _netPlayers = new NetPlayers();
         private readonly NetString _netString = new NetString();
         private readonly NetHeartbeat _netHeartbeat = new NetHeartbeat();
+        private ReliableMessageManager _reliableManager;
+
         private float _currentLatency = 0;
         public float CurrentLatency => _currentLatency;
         public static Action<string> onConsoleMessageReceived;
@@ -24,6 +26,8 @@ namespace Network
         public MessageDispatcher(PlayerManager playerManager, UdpConnection connection,
             ClientManager clientManager, bool isServer)
         {
+            _reliableManager = new ReliableMessageManager(connection);
+
             InitializeMessageHandlers(playerManager, connection, clientManager, isServer);
         }
 
@@ -40,7 +44,8 @@ namespace Network
                             int clientId = clientManager.AddClient(ip);
                             clientManager.UpdateClientTimestamp(clientId);
                             playerManager.TryGetPlayer(clientId, out var player);
-                            NetworkManager.Instance.Broadcast(_netPlayers.Serialize(player.transform.position, clientId));
+                            NetworkManager.Instance.Broadcast(
+                                _netPlayers.Serialize(player.transform.position, clientId));
                             List<byte> newId = BitConverter.GetBytes((int)MessageType.Id).ToList();
                             newId.AddRange(BitConverter.GetBytes(NetworkManager.Instance.GetClientId(ip)));
                             connection.Send(newId.ToArray(), ip);
@@ -111,6 +116,16 @@ namespace Network
                         if (isServer) return;
                         int clientId = BitConverter.ToInt32(data, 4);
                     }
+                },
+                {
+                    MessageType.Acknowledgment, (data, _) =>
+                    {
+                        if (data.Length >= 8)
+                        {
+                            uint sequenceNumber = BitConverter.ToUInt32(data, 4);
+                            _reliableManager.ProcessAcknowledgment(sequenceNumber);
+                        }
+                    }
                 }
             };
         }
@@ -119,20 +134,66 @@ namespace Network
         {
             try
             {
-                MessageType messageType = DeserializeMessageType(data);
-                if (_messageHandlers.TryGetValue(messageType, out Action<byte[], IPEndPoint> handler))
+                if (data.Length < MessageHeader.HEADER_SIZE)
+                    return false;
+
+                MessageType messageType = (MessageType)BitConverter.ToInt32(data, 0);
+
+                if (messageType == MessageType.Acknowledgment)
                 {
+                    if (!_messageHandlers.TryGetValue(messageType, out var handler)) return false;
                     handler(data, ip);
+                    return true;
+
+                }
+
+                MessageHeader header;
+                try
+                {
+                    header = MessageHeader.Deserialize(data);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[MessageDispatcher] Header deserialization failed: {ex.Message}");
+                    return false;
+                }
+
+                byte[] body = new byte[data.Length - MessageHeader.HEADER_SIZE];
+                Array.Copy(data, MessageHeader.HEADER_SIZE, body, 0, body.Length);
+
+                uint calculatedBodyChecksum = MessageHeader.CalculateBodyChecksum(body);
+                if (calculatedBodyChecksum != header.BodyChecksum)
+                {
+                    Debug.LogError("[MessageDispatcher] Body checksum verification failed");
+                    return false;
+                }
+
+                if (header.IsImportant)
+                {
+                    _reliableManager.SendAcknowledgment(header.SequenceNumber, ip);
+                }
+
+                if (!_reliableManager.IsNewMessage(header.SequenceNumber, ip))
+                {
                     return true;
                 }
 
-                return false;
+                if (!_messageHandlers.TryGetValue(header.MessageType, out var msgHandler)) return false;
+                msgHandler(body, ip);
+                return true;
+
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[MessageDispatcher] Error dispatching message: {ex.Message}");
                 return false;
             }
+        }
+
+        public void SendMessage(byte[] body, MessageType messageType, IPEndPoint target, bool isImportant = false)
+        {
+            byte[] fullMessage = _reliableManager.PrepareMessage(body, messageType, isImportant);
+            _reliableManager.SendMessage(fullMessage, target, isImportant);
         }
 
         public MessageType DeserializeMessageType(byte[] data)

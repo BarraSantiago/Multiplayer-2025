@@ -7,7 +7,8 @@ namespace Network.Messages
         Console = 0,
         Position = 1,
         Ping,
-        Id
+        Id,
+        Acknowledgment
     }
 
     public interface IMessage<T>

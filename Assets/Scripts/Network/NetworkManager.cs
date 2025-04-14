@@ -22,7 +22,8 @@ namespace Network
 
         public Action<byte[], IPEndPoint> OnReceiveEvent;
         public Action<byte[], string> OnReceiveMessageEvent;
-        
+        private IPEndPoint _serverEndpoint;
+
         private UdpConnection _connection;
         private ClientManager _clientManager;
         private PlayerManager _playerManager;
@@ -70,13 +71,15 @@ namespace Network
             {
                 _connection = new UdpConnection(ip, port, this);
                 _messageDispatcher = new MessageDispatcher(_playerManager, _connection, _clientManager, false);
-                
+        
+                // Store the server endpoint once when connecting
+                _serverEndpoint = new IPEndPoint(ip, port);
+        
                 GameObject player = new GameObject();
                 player.AddComponent<Player>();
-                
-                IPEndPoint serverEndpoint = new IPEndPoint(ip, port);
-                _clientManager.AddClient(serverEndpoint);
-                
+
+                _clientManager.AddClient(_serverEndpoint);
+
                 SendToServer(null, MessageType.HandShake);
             }
             catch (Exception e)
@@ -127,19 +130,23 @@ namespace Network
             Debug.Log($"[NetworkManager] Console message: {message}");
         }
 
-        public void SendToServer(object data, MessageType messageType)
+        public void SendToServer(object data, MessageType messageType, bool isImportant = false)
         {
             try
             {
                 byte[] serializedData = _messageDispatcher.SerializeMessage(data, messageType);
-                SendToServer(serializedData);
+
+                if (_connection != null)
+                {
+                    _messageDispatcher.SendMessage(serializedData, messageType, _serverEndpoint, isImportant);
+                }
             }
             catch (Exception e)
             {
                 Debug.LogError($"[NetworkManager] SendToServer failed: {e.Message}");
             }
         }
-
+        
         public void SendToServer(byte[] data)
         {
             try
@@ -149,6 +156,26 @@ namespace Network
             catch (Exception e)
             {
                 Debug.LogError($"[NetworkManager] Send failed: {e.Message}");
+            }
+        }
+        
+        public void SendToClient(int clientId, object data, MessageType messageType, bool isImportant = false)
+        {
+            try
+            {
+                if (_clientManager.TryGetClient(clientId, out Client client))
+                {
+                    byte[] serializedData = _messageDispatcher.SerializeMessage(data, messageType);
+                    _messageDispatcher.SendMessage(serializedData, messageType, client.ipEndPoint, isImportant);
+                }
+                else
+                {
+                    Debug.LogWarning($"[NetworkManager] Cannot send to client {clientId}: client not found");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[NetworkManager] SendToClient failed: {e.Message}");
             }
         }
 
@@ -169,8 +196,12 @@ namespace Network
 
         private void SendHeartbeat()
         {
-            byte[] heartbeatData = _messageDispatcher.SerializeMessage(null, MessageType.Ping);
-            Broadcast(heartbeatData);
+            foreach (KeyValuePair<int, Client> client in _clientManager.GetAllClients())
+            {
+                // Heartbeats are not important messages (don't need reliable delivery)
+                byte[] heartbeatData = _messageDispatcher.SerializeMessage(null, MessageType.Ping);
+                _messageDispatcher.SendMessage(heartbeatData, MessageType.Ping, client.Value.ipEndPoint, false);
+            }
         }
 
         private void CheckForTimeouts()
