@@ -23,7 +23,6 @@ namespace Network.Messages
         {
             List<byte> outData = new List<byte>();
 
-            outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
             outData.AddRange(BitConverter.GetBytes(Data.Count));
 
             foreach (KeyValuePair<int, GameObject> kvp in Data)
@@ -42,7 +41,6 @@ namespace Network.Messages
         {
             List<byte> outData = new List<byte>();
 
-            outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
             outData.AddRange(BitConverter.GetBytes(1));
             outData.AddRange(BitConverter.GetBytes(id));
             outData.AddRange(BitConverter.GetBytes(pos.x));
@@ -56,7 +54,7 @@ namespace Network.Messages
         {
             Dictionary<int, Vector3> outData = new Dictionary<int, Vector3>();
 
-            int offset = 4; // Skip the MessageType
+            int offset = 0;
             int count = BitConverter.ToInt32(message, offset);
             offset += 4;
 

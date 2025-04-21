@@ -11,24 +11,24 @@ namespace Network
     public class MessageDispatcher
     {
         private Dictionary<MessageType, Action<byte[], IPEndPoint>> _messageHandlers;
-
         private readonly NetVector3 _netVector3 = new NetVector3();
         private readonly NetPlayers _netPlayers = new NetPlayers();
         private readonly NetString _netString = new NetString();
         private readonly NetHeartbeat _netHeartbeat = new NetHeartbeat();
-        private ReliableMessageManager _reliableManager;
-
         private float _currentLatency = 0;
         public float CurrentLatency => _currentLatency;
         public static Action<string> onConsoleMessageReceived;
         private float _lastPing;
+        
+        private MessageTracker _messageTracker = new MessageTracker();
+        private const float ResendInterval = 1.0f;
+        private float _lastResendCheckTime = 0f;
 
         public MessageDispatcher(PlayerManager playerManager, UdpConnection connection,
             ClientManager clientManager, bool isServer)
         {
-            _reliableManager = new ReliableMessageManager(connection);
-
             InitializeMessageHandlers(playerManager, connection, clientManager, isServer);
+            InitializeAckHandler(connection);
         }
 
         private void InitializeMessageHandlers(PlayerManager playerManager, UdpConnection connection,
@@ -44,8 +44,7 @@ namespace Network
                             int clientId = clientManager.AddClient(ip);
                             clientManager.UpdateClientTimestamp(clientId);
                             playerManager.TryGetPlayer(clientId, out var player);
-                            NetworkManager.Instance.Broadcast(
-                                _netPlayers.Serialize(player.transform.position, clientId));
+                            NetworkManager.Instance.Broadcast(_netPlayers.Serialize(player.transform.position, clientId));
                             List<byte> newId = BitConverter.GetBytes((int)MessageType.Id).ToList();
                             newId.AddRange(BitConverter.GetBytes(NetworkManager.Instance.GetClientId(ip)));
                             connection.Send(newId.ToArray(), ip);
@@ -94,6 +93,8 @@ namespace Network
                 {
                     MessageType.Ping, (_, ip) =>
                     {
+
+
                         if (!isServer)
                         {
                             _currentLatency = (Time.realtimeSinceStartup - _lastPing) * 1000;
@@ -116,84 +117,8 @@ namespace Network
                         if (isServer) return;
                         int clientId = BitConverter.ToInt32(data, 4);
                     }
-                },
-                {
-                    MessageType.Acknowledgment, (data, _) =>
-                    {
-                        if (data.Length >= 8)
-                        {
-                            uint sequenceNumber = BitConverter.ToUInt32(data, 4);
-                            _reliableManager.ProcessAcknowledgment(sequenceNumber);
-                        }
-                    }
                 }
             };
-        }
-
-        public bool TryDispatchMessage(byte[] data, IPEndPoint ip)
-        {
-            try
-            {
-                if (data.Length < MessageHeader.HEADER_SIZE)
-                    return false;
-
-                MessageType messageType = (MessageType)BitConverter.ToInt32(data, 0);
-
-                if (messageType == MessageType.Acknowledgment)
-                {
-                    if (!_messageHandlers.TryGetValue(messageType, out var handler)) return false;
-                    handler(data, ip);
-                    return true;
-
-                }
-
-                MessageHeader header;
-                try
-                {
-                    header = MessageHeader.Deserialize(data);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"[MessageDispatcher] Header deserialization failed: {ex.Message}");
-                    return false;
-                }
-
-                byte[] body = new byte[data.Length - MessageHeader.HEADER_SIZE];
-                Array.Copy(data, MessageHeader.HEADER_SIZE, body, 0, body.Length);
-
-                uint calculatedBodyChecksum = MessageHeader.CalculateBodyChecksum(body);
-                if (calculatedBodyChecksum != header.BodyChecksum)
-                {
-                    Debug.LogError("[MessageDispatcher] Body checksum verification failed");
-                    return false;
-                }
-
-                if (header.IsImportant)
-                {
-                    _reliableManager.SendAcknowledgment(header.SequenceNumber, ip);
-                }
-
-                if (!_reliableManager.IsNewMessage(header.SequenceNumber, ip))
-                {
-                    return true;
-                }
-
-                if (!_messageHandlers.TryGetValue(header.MessageType, out var msgHandler)) return false;
-                msgHandler(body, ip);
-                return true;
-
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[MessageDispatcher] Error dispatching message: {ex.Message}");
-                return false;
-            }
-        }
-
-        public void SendMessage(byte[] body, MessageType messageType, IPEndPoint target, bool isImportant = false)
-        {
-            byte[] fullMessage = _reliableManager.PrepareMessage(body, messageType, isImportant);
-            _reliableManager.SendMessage(fullMessage, target, isImportant);
         }
 
         public MessageType DeserializeMessageType(byte[] data)
@@ -206,13 +131,84 @@ namespace Network
             int messageTypeInt = BitConverter.ToInt32(data, 0);
             return (MessageType)messageTypeInt;
         }
+        
+        private void InitializeAckHandler(UdpConnection connection)
+        {
+            _messageHandlers[MessageType.Acknowledgment] = (data, ip) =>
+            {
+                int offset = 0;
+                MessageType ackedType = (MessageType)BitConverter.ToInt32(data, offset);
+                offset += 4;
+                int ackedNumber = BitConverter.ToInt32(data, offset);
+                
+                _messageTracker.ConfirmMessage(ip, ackedType, ackedNumber);
+            };
+        }
+
+        public bool TryDispatchMessage(byte[] data, IPEndPoint ip)
+        {
+            try
+            {
+                MessageEnvelope envelope = MessageEnvelope.Deserialize(data);
+                
+                if (envelope.IsImportant)
+                {
+                    SendAcknowledgment(envelope.MessageType, envelope.MessageNumber, ip);
+                }
+                
+                if (_messageHandlers.TryGetValue(envelope.MessageType, out Action<byte[], IPEndPoint> handler))
+                {
+                    handler(envelope.Data, ip);
+                    return true;
+                }
+                
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[MessageDispatcher] Error dispatching message: {ex.Message}");
+                return false;
+            }
+        }
+
+        private void SendAcknowledgment(MessageType ackedType, int ackedNumber, IPEndPoint target)
+        {
+            List<byte> ackData = new List<byte>();
+            ackData.AddRange(BitConverter.GetBytes((int)ackedType));
+            ackData.AddRange(BitConverter.GetBytes(ackedNumber));
+            
+            SendMessage(ackData.ToArray(), MessageType.Acknowledgment, target, false, false);
+        }
+
+        public void SendMessage(byte[] data, MessageType messageType, IPEndPoint target, bool isImportant, bool isCritical = false)
+        {
+            int messageNumber = _messageTracker.GetNextMessageNumber(messageType);
+            
+            MessageEnvelope envelope = new MessageEnvelope
+            {
+                IsCritical = isCritical,
+                MessageType = messageType,
+                MessageNumber = messageNumber,
+                IsImportant = isImportant,
+                Data = data
+            };
+            
+            byte[] serializedEnvelope = envelope.Serialize();
+            
+            if (isImportant)
+            {
+                _messageTracker.AddPendingMessage(serializedEnvelope, target, messageType, messageNumber);
+            }
+            
+            NetworkManager.Instance.SendMessage(serializedEnvelope, target);
+        }
 
         public byte[] SerializeMessage(object data, MessageType messageType, int id = -1)
         {
             switch (messageType)
             {
                 case MessageType.HandShake:
-                    return BitConverter.GetBytes((int)MessageType.HandShake);
+                    return null;
                 case MessageType.Console:
                     if (data is string str) return _netString.Serialize(str);
                     throw new ArgumentException("Data must be string for Console messages");
@@ -225,6 +221,31 @@ namespace Network
                     return _netHeartbeat.Serialize();
                 default:
                     throw new ArgumentOutOfRangeException(nameof(messageType));
+            }
+        }
+        
+        public void CheckAndResendMessages()
+        {
+            float currentTime = Time.realtimeSinceStartup;
+            if (currentTime - _lastResendCheckTime < ResendInterval)
+                return;
+        
+            _lastResendCheckTime = currentTime;
+    
+            Dictionary<IPEndPoint, List<MessageTracker.PendingMessage>> pendingMessages = _messageTracker.GetPendingMessages();
+            foreach (var endpointMessages in pendingMessages)
+            {
+                IPEndPoint target = endpointMessages.Key;
+                foreach (MessageTracker.PendingMessage message in endpointMessages.Value)
+                {
+                    // Only resend messages that have been waiting long enough
+                    if (currentTime - message.LastSentTime >= ResendInterval)
+                    {
+                        NetworkManager.Instance.SendMessage(message.Data, target);
+                        _messageTracker.UpdateMessageSentTime(target, message.MessageType, message.MessageNumber);
+                        Debug.Log($"[MessageDispatcher] Resending message: Type={message.MessageType}, Number={message.MessageNumber} to {target}");
+                    }
+                }
             }
         }
     }

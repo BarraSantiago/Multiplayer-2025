@@ -22,8 +22,7 @@ namespace Network.Messages
     
         public float Deserialize(byte[] message)
         {
-            int offset = 4;
-            _timestamp = BitConverter.ToSingle(message, offset);
+            _timestamp = BitConverter.ToSingle(message);
             return _timestamp;
         }
     }

@@ -8,28 +8,22 @@ namespace Network.Messages
     {
         public const int HEADER_SIZE = 24;
         
-        public MessageType MessageType { get; private set; }
-        public uint SequenceNumber { get; private set; }
-        public bool IsImportant { get; private set; }
         public ushort HeaderChecksum { get; private set; }
         public uint BodyChecksum { get; private set; }
         
-        public MessageHeader(MessageType type, uint sequenceNumber, bool isImportant)
+        public MessageHeader()
         {
-            MessageType = type;
-            SequenceNumber = sequenceNumber;
-            IsImportant = isImportant;
         }
         
-        public byte[] Serialize()
+        public byte[] Serialize(MessageType type, uint sequenceNumber, bool isImportant)
         {
             byte[] header = new byte[HEADER_SIZE];
             
-            BitConverter.GetBytes((int)MessageType).CopyTo(header, 0);
+            BitConverter.GetBytes((int)type).CopyTo(header, 0);
             
-            BitConverter.GetBytes(SequenceNumber).CopyTo(header, 4);
+            BitConverter.GetBytes(sequenceNumber).CopyTo(header, 4);
             
-            header[8] = (byte)(IsImportant ? 1 : 0);
+            header[8] = (byte)(isImportant ? 1 : 0);
             
             BitConverter.GetBytes((ushort)0).CopyTo(header, 9);
             BitConverter.GetBytes((uint)0).CopyTo(header, 11);
@@ -40,7 +34,7 @@ namespace Network.Messages
             return header;
         }
         
-        public static MessageHeader Deserialize(byte[] data)
+        public static (MessageType mType,uint mNum,bool isImportant, uint bodyCheckSum) Deserialize(byte[] data)
         {
             if (data.Length < HEADER_SIZE)
                 throw new ArgumentException("Data too short for header");
@@ -61,13 +55,7 @@ namespace Network.Messages
             if (calculatedHeaderChecksum != storedHeaderChecksum)
                 throw new InvalidOperationException("Header checksum verification failed");
             
-            MessageHeader header = new MessageHeader(type, sequenceNumber, isImportant)
-            {
-                HeaderChecksum = storedHeaderChecksum,
-                BodyChecksum = storedBodyChecksum
-            };
-            
-            return header;
+            return (type, sequenceNumber, isImportant, storedBodyChecksum);
         }
         
         public static ushort CalculateHeaderChecksum(byte[] header)

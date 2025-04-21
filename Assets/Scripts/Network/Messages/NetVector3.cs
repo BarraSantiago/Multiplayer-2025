@@ -43,8 +43,6 @@ namespace Network.Messages
         {
             List<byte> outData = new List<byte>();
 
-            outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
-            outData.AddRange(BitConverter.GetBytes(_lastMsgID++));
             outData.AddRange(BitConverter.GetBytes(id));
             outData.AddRange(BitConverter.GetBytes(_data.x));
             outData.AddRange(BitConverter.GetBytes(_data.y));
@@ -57,8 +55,6 @@ namespace Network.Messages
         {
             List<byte> outData = new List<byte>();
 
-            outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
-            outData.AddRange(BitConverter.GetBytes(_lastMsgID++));
             outData.AddRange(BitConverter.GetBytes(id));
             outData.AddRange(BitConverter.GetBytes(newData.x));
             outData.AddRange(BitConverter.GetBytes(newData.y));

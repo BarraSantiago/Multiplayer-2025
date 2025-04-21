@@ -28,7 +28,7 @@ namespace Network
         private ClientManager _clientManager;
         private PlayerManager _playerManager;
         private MessageDispatcher _messageDispatcher;
-        
+
         private float _lastHeartbeatTime;
         private float _lastTimeoutCheck;
         private bool _disposed = false;
@@ -37,7 +37,7 @@ namespace Network
         {
             _clientManager = new ClientManager();
             _playerManager = new PlayerManager(PlayerPrefab);
-            
+
             _clientManager.OnClientConnected += OnClientConnected;
             _clientManager.OnClientDisconnected += OnClientDisconnected;
         }
@@ -46,12 +46,12 @@ namespace Network
         {
             IsServer = true;
             Port = port;
-            
+
             try
             {
                 _connection = new UdpConnection(port, this);
                 _messageDispatcher = new MessageDispatcher(_playerManager, _connection, _clientManager, true);
-                
+
                 Debug.Log($"[NetworkManager] Server started on port {port}");
             }
             catch (Exception e)
@@ -71,10 +71,10 @@ namespace Network
             {
                 _connection = new UdpConnection(ip, port, this);
                 _messageDispatcher = new MessageDispatcher(_playerManager, _connection, _clientManager, false);
-        
+
                 // Store the server endpoint once when connecting
                 _serverEndpoint = new IPEndPoint(ip, port);
-        
+
                 GameObject player = new GameObject();
                 player.AddComponent<Player>();
 
@@ -94,7 +94,7 @@ namespace Network
             try
             {
                 _messageDispatcher.TryDispatchMessage(data, ip);
-                
+
                 OnReceiveEvent?.Invoke(data, ip);
             }
             catch (Exception ex)
@@ -102,13 +102,14 @@ namespace Network
                 Debug.LogError($"[NetworkManager] Error processing data from {ip}: {ex.Message}");
             }
         }
-        
+
         public int GetClientId(IPEndPoint ip)
         {
             if (_clientManager.TryGetClientId(ip, out int clientId))
             {
                 return clientId;
             }
+
             return -1;
         }
 
@@ -119,12 +120,12 @@ namespace Network
                 _playerManager.CreatePlayer(clientId);
             }
         }
-        
+
         private void OnClientDisconnected(int clientId)
         {
             _playerManager.RemovePlayer(clientId);
         }
-        
+
         private void OnConsoleMessageReceived(string message)
         {
             Debug.Log($"[NetworkManager] Console message: {message}");
@@ -146,7 +147,7 @@ namespace Network
                 Debug.LogError($"[NetworkManager] SendToServer failed: {e.Message}");
             }
         }
-        
+
         public void SendToServer(byte[] data)
         {
             try
@@ -158,7 +159,15 @@ namespace Network
                 Debug.LogError($"[NetworkManager] Send failed: {e.Message}");
             }
         }
-        
+
+        public void SendMessage(byte[] data, IPEndPoint ipEndPoint)
+        {
+            if (!IsServer)
+                _connection.Send(data);
+            else
+                _connection.Send(data, ipEndPoint);
+        }
+
         public void SendToClient(int clientId, object data, MessageType messageType, bool isImportant = false)
         {
             try
@@ -207,9 +216,9 @@ namespace Network
         private void CheckForTimeouts()
         {
             if (!IsServer) return;
-            
+
             List<IPEndPoint> clientsToRemove = _clientManager.GetTimedOutClients(TimeOut);
-            
+
             foreach (IPEndPoint ip in clientsToRemove)
             {
                 _clientManager.RemoveClient(ip);
@@ -235,6 +244,9 @@ namespace Network
                 CheckForTimeouts();
                 _lastTimeoutCheck = currentTime;
             }
+
+            _messageDispatcher?.CheckAndResendMessages();
+
             if (heartbeatText && _messageDispatcher != null && !IsServer)
             {
                 heartbeatText.text = $"Ping: {_messageDispatcher.CurrentLatency:F0} ms";

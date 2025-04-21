@@ -27,7 +27,6 @@ namespace Network.Messages
         {
             List<byte> outData = new List<byte>();
 
-            outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
             byte[] stringBytes = Encoding.UTF8.GetBytes(Data);
             outData.AddRange(BitConverter.GetBytes(stringBytes.Length));
             outData.AddRange(stringBytes);
@@ -39,7 +38,6 @@ namespace Network.Messages
         {
             List<byte> outData = new List<byte>();
 
-            outData.AddRange(BitConverter.GetBytes((int)GetMessageType()));
             byte[] stringBytes = Encoding.UTF8.GetBytes(newData);
             outData.AddRange(BitConverter.GetBytes(stringBytes.Length));
             outData.AddRange(stringBytes);
@@ -49,7 +47,7 @@ namespace Network.Messages
 
         public string Deserialize(byte[] message)
         {
-            int offset = 4; 
+            int offset = 0; 
             int stringLength = BitConverter.ToInt32(message, offset);
             offset += 4;
 
