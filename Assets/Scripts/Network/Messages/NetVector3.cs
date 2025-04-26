@@ -27,9 +27,9 @@ namespace Network.Messages
         {
             Vector3 outData;
 
-            outData.x = BitConverter.ToSingle(message, 16);
-            outData.y = BitConverter.ToSingle(message, 20);
-            outData.z = BitConverter.ToSingle(message, 24);
+            outData.x = BitConverter.ToSingle(message, 4);
+            outData.y = BitConverter.ToSingle(message, 8);
+            outData.z = BitConverter.ToSingle(message, 12);
 
             return outData;
         }

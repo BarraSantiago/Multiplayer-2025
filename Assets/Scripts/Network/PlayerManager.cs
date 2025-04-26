@@ -38,8 +38,7 @@ namespace Network
             if (!_players.TryRemove(clientId, out GameObject player))
                 return false;
                 
-            if (player != null)
-                Object.Destroy(player);
+            if (player) Object.Destroy(player);
                 
             return true;
         }

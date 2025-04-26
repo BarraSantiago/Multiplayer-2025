@@ -40,9 +40,16 @@ namespace Network.Messages
 
         public static MessageEnvelope Deserialize(byte[] data)
         {
-            MessageEnvelope envelope = new MessageEnvelope();
+            // Validate minimum message length (header + checksums)
+            // 1 (critical) + 4 (msgType) + 4 (msgNum) + 1 (important) + 8 (checksums) = 18 bytes
+            if (data == null)
+            {
+                throw new ArgumentException("Data too short to be a valid message envelope");
+            }
 
+            MessageEnvelope envelope = new MessageEnvelope();
             int offset = 0;
+
             envelope.IsCritical = data[offset] == 1;
             offset += 1;
 
@@ -55,8 +62,10 @@ namespace Network.Messages
             envelope.IsImportant = data[offset] == 1;
             offset += 1;
 
-            // Check if there's data to extract (beside the checksums)
+            // Calculate data length (everything except header and checksums)
             int dataLength = data.Length - offset - 8;
+
+            // Handle message content (which could be null/empty)
             if (dataLength > 0)
             {
                 byte[] messageData = new byte[dataLength];
@@ -73,6 +82,7 @@ namespace Network.Messages
             offset += 4;
             envelope.Checksum2 = BitConverter.ToInt32(data, offset);
 
+            // Validate checksums
             int calculatedChecksum1, calculatedChecksum2;
             envelope.CalculateChecksums(out calculatedChecksum1, out calculatedChecksum2);
 
@@ -102,39 +112,28 @@ namespace Network.Messages
             Array.Copy(BitConverter.GetBytes(MessageNumber), 0, headerData, 5, 4);
             headerData[9] = (byte)(IsImportant ? 1 : 0);
 
-            // Checksum 1: XOR and rotate bits using unsigned int
+            // Standard additive checksum with carry
             for (int i = 0; i < headerData.Length; i++)
             {
-                uChecksum1 ^= (uint)headerData[i] << (8 * (i % 4));
-                uChecksum1 = (uChecksum1 << 1) | (uChecksum1 >> 31);
+                uChecksum1 += headerData[i];
+                uChecksum2 ^= (uint)(headerData[i] << (i & 0x0F));
             }
 
-            // Only process Data if it's not null
             if (Data != null)
             {
                 for (int i = 0; i < Data.Length; i++)
                 {
-                    uChecksum1 ^= (uint)Data[i] << (8 * (i % 4));
-                    uChecksum1 = (uChecksum1 << 1) | (uChecksum1 >> 31);
+                    uChecksum1 += Data[i];
+                    uChecksum2 ^= (uint)(Data[i] << ((i + headerData.Length) & 0x0F));
                 }
             }
 
-            // Checksum 2: Different algorithm
-            for (int i = 0; i < headerData.Length; i++)
-            {
-                uChecksum2 = uChecksum2 * 33 + headerData[i];
-            }
+            // Fold down to 32 bits
+            uChecksum1 = (uChecksum1 & 0xFFFF) + (uChecksum1 >> 16);
+            uChecksum1 = (uChecksum1 & 0xFFFF) + (uChecksum1 >> 16);
 
-            // Only process Data if it's not null
-            if (Data != null)
-            {
-                for (int i = 0; i < Data.Length; i++)
-                {
-                    uChecksum2 = uChecksum2 * 33 + Data[i];
-                }
-            }
-
-            uChecksum2 ^= uChecksum2 >> 16;
+            // Combine the two checksums for the second value
+            uChecksum2 += uChecksum1;
 
             // Convert back to int
             checksum1 = (int)uChecksum1;

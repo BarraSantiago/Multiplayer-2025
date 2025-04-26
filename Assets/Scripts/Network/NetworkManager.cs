@@ -20,8 +20,6 @@ namespace Network
         public int TimeOut = 30;
         public float HeartbeatInterval = 0.15f;
 
-        public Action<byte[], IPEndPoint> OnReceiveEvent;
-        public Action<byte[], string> OnReceiveMessageEvent;
         private IPEndPoint _serverEndpoint;
 
         private UdpConnection _connection;
@@ -94,8 +92,6 @@ namespace Network
             try
             {
                 _messageDispatcher.TryDispatchMessage(data, ip);
-
-                OnReceiveEvent?.Invoke(data, ip);
             }
             catch (Exception ex)
             {
@@ -188,13 +184,31 @@ namespace Network
             }
         }
 
-        public void Broadcast(byte[] data)
+        public void SerializedBroadcast(object data, MessageType messageType, int id = -1)
+        {
+            try
+            {
+                byte[] serializedData = _messageDispatcher.SerializeMessage(data, messageType, id);
+                serializedData = _messageDispatcher.ConvertToEnvelope(serializedData, messageType, null, false);
+                Broadcast(serializedData);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[NetworkManager] Serialized broadcast failed: {e.Message}");
+            }
+        }
+        
+        public void Broadcast(byte[] data, bool isImportant = false, MessageType messageType = MessageType.None, int messageNumber = -1)
         {
             try
             {
                 foreach (KeyValuePair<int, Client> client in _clientManager.GetAllClients())
                 {
                     _connection.Send(data, client.Value.ipEndPoint);
+                    if (isImportant)
+                    {
+                        _messageDispatcher._messageTracker.AddPendingMessage(data, client.Value.ipEndPoint, messageType, messageNumber);
+                    }
                 }
             }
             catch (Exception e)
@@ -207,8 +221,8 @@ namespace Network
         {
             foreach (KeyValuePair<int, Client> client in _clientManager.GetAllClients())
             {
-                // Heartbeats are not important messages (don't need reliable delivery)
                 byte[] heartbeatData = _messageDispatcher.SerializeMessage(null, MessageType.Ping);
+                heartbeatData = _messageDispatcher.ConvertToEnvelope(heartbeatData, MessageType.Ping, null, false);
                 _messageDispatcher.SendMessage(heartbeatData, MessageType.Ping, client.Value.ipEndPoint, false);
             }
         }
@@ -256,9 +270,37 @@ namespace Network
         public void Dispose()
         {
             if (_disposed) return;
-
+        
             try
             {
+                // Send disconnect notification based on role
+                if (IsServer)
+                {
+                    // Notify all clients about server shutdown
+                    byte[] shutdownData = _messageDispatcher.SerializeMessage("Server shutting down", MessageType.Console);
+                    Broadcast(shutdownData);
+                    Debug.Log("[NetworkManager] Server shutdown notification sent");
+                }
+                else if (_serverEndpoint != null)
+                {
+                    // Client notifies server about disconnection
+                    byte[] disconnectData = _messageDispatcher.SerializeMessage("Client disconnecting", MessageType.Console);
+                    _connection?.Send(disconnectData);
+                    Debug.Log("[NetworkManager] Client disconnect notification sent");
+                }
+        
+                // Give time for final messages to be sent
+                if (_connection != null) 
+                {
+                    _connection.FlushReceiveData();
+                    System.Threading.Thread.Sleep(100); // Brief delay to allow packets to be sent
+                }
+        
+                // Clean up event subscriptions
+                _clientManager.OnClientConnected -= OnClientConnected;
+                _clientManager.OnClientDisconnected -= OnClientDisconnected;
+        
+                // Close connection and clear resources
                 _connection?.Close();
                 _playerManager.Clear();
                 _clientManager.Clear();
@@ -267,7 +309,7 @@ namespace Network
             {
                 Debug.LogError($"[NetworkManager] Disposal error: {e.Message}");
             }
-
+        
             _disposed = true;
         }
 
