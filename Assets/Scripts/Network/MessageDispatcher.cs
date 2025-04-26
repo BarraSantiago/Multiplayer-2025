@@ -111,14 +111,14 @@ namespace Network
         {
             try
             {
+                
                 string message = _netString.Deserialize(data);
                 onConsoleMessageReceived?.Invoke(message);
 
-                if (isServer && !string.IsNullOrEmpty(message))
-                {
-                    NetworkManager.Instance.Broadcast(data);
-                    Debug.Log($"[MessageDispatcher] Broadcasting console message from {ip}");
-                }
+                if (!isServer || string.IsNullOrEmpty(message)) return;
+                
+                NetworkManager.Instance.SerializedBroadcast(message, MessageType.Console);
+                Debug.Log($"[MessageDispatcher] Broadcasting console message from {ip}");
             }
             catch (Exception ex)
             {
