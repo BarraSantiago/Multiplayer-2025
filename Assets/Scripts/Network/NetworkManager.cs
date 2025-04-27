@@ -70,7 +70,6 @@ namespace Network
                 _connection = new UdpConnection(ip, port, this);
                 _messageDispatcher = new MessageDispatcher(_playerManager, _connection, _clientManager, false);
 
-                // Store the server endpoint once when connecting
                 _serverEndpoint = new IPEndPoint(ip, port);
 
                 GameObject player = new GameObject();

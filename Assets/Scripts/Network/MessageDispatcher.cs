@@ -111,12 +111,11 @@ namespace Network
         {
             try
             {
-                
                 string message = _netString.Deserialize(data);
                 onConsoleMessageReceived?.Invoke(message);
 
                 if (!isServer || string.IsNullOrEmpty(message)) return;
-                
+
                 NetworkManager.Instance.SerializedBroadcast(message, MessageType.Console);
                 Debug.Log($"[MessageDispatcher] Broadcasting console message from {ip}");
             }
@@ -173,7 +172,9 @@ namespace Network
                     _currentLatency = (Time.realtimeSinceStartup - _lastPing) * 1000;
                     _lastPing = Time.realtimeSinceStartup;
 
-                    connection.Send(_netHeartbeat.Serialize());
+                    Debug.Log("ping");
+                    NetworkManager.Instance.SendToServer(null, MessageType.Ping, true);
+
                 }
                 else
                 {
@@ -184,7 +185,7 @@ namespace Network
                     }
 
                     clientManager.UpdateClientTimestamp(clientId);
-                    connection.Send(_netHeartbeat.Serialize(), ip);
+                    NetworkManager.Instance.SendToClient(0, null, MessageType.Ping, true);
                 }
             }
             catch (Exception ex)
@@ -346,7 +347,7 @@ namespace Network
                     throw new ArgumentException("Data must be Vector3 for Position messages");
 
                 case MessageType.Ping:
-                    return _netHeartbeat.Serialize();
+                    return null;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(messageType));
             }
