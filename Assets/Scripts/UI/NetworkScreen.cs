@@ -1,21 +1,25 @@
 ﻿using System.Net;
 using Network;
+using UnityEngine;
 using UnityEngine.UI;
 using Utils;
 
 namespace UI
 {
-    public class NetworkScreen : MonoBehaviourSingleton<NetworkScreen>
+    public class NetworkScreen : MonoBehaviour
     {
+        [SerializeField] GameObject chatScreen;
         public Button connectBtn;
         public Button startServerBtn;
         public InputField portInputField;
         public InputField addressInputField;
+        private NetworkManagerFactory _networkManagerFactory;
 
-        protected override void Initialize()
+        protected void Awake()
         {
             connectBtn.onClick.AddListener(OnConnectBtnClick);
             startServerBtn.onClick.AddListener(OnStartServerBtnClick);
+            _networkManagerFactory = FindAnyObjectByType<NetworkManagerFactory>();
         }
 
         private void OnConnectBtnClick()
@@ -23,21 +27,21 @@ namespace UI
             IPAddress ipAddress = IPAddress.Parse(addressInputField.text);
             int port = System.Convert.ToInt32(portInputField.text);
 
-            NetworkManager.Instance.StartClient(ipAddress, port);
-        
+            _networkManagerFactory.CreateClientManager(ipAddress, port);
+
             SwitchToChatScreen();
         }
 
         private void OnStartServerBtnClick()
         {
             int port = System.Convert.ToInt32(portInputField.text);
-            NetworkManager.Instance.StartServer(port);
+            _networkManagerFactory.CreateServerManager(port);
             SwitchToChatScreen();
         }
 
         private void SwitchToChatScreen()
         {
-            ChatScreen.Instance.gameObject.SetActive(true);
+            chatScreen.SetActive(true);
             this.gameObject.SetActive(false);
         }
     }
