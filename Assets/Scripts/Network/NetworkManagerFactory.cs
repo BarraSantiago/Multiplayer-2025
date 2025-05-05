@@ -1,6 +1,9 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Network.ClientDir;
+using Network.Server;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Network
 {
@@ -8,11 +11,24 @@ namespace Network
     {
         [SerializeField] private ServerNetworkManager serverManagerPrefab;
         [SerializeField] private ClientNetworkManager clientManagerPrefab;
+        [SerializeField] private Button DisconnectButton;
 
         public ServerNetworkManager CreateServerManager(int port)
         {
             ServerNetworkManager manager = Instantiate(serverManagerPrefab);
             manager.StartServer(port);
+            DisconnectButton.onClick.AddListener(() =>
+            {
+                manager.Dispose();
+                if (Application.isEditor)
+                {
+                    UnityEditor.EditorApplication.isPlaying = false;
+                }
+                else
+                {
+                    Application.Quit();
+                }
+            });
             return manager;
         }
 
@@ -20,6 +36,18 @@ namespace Network
         {
             ClientNetworkManager manager = Instantiate(clientManagerPrefab);
             manager.StartClient(ip, port);
+            DisconnectButton.onClick.AddListener(() =>
+            {
+                manager.Dispose();
+                if (Application.isEditor)
+                {
+                    UnityEditor.EditorApplication.isPlaying = false;
+                }
+                else
+                {
+                    Application.Quit();
+                }
+            });
             return manager;
         }
     }
