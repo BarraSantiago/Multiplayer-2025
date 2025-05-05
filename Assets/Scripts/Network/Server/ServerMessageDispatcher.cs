@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Game;
 using Network.ClientDir;
 using Network.interfaces;
 using Network.Messages;
@@ -13,7 +14,8 @@ namespace Network
     {
         private readonly ServerNetworkManager _serverNetworkManager;
 
-        public ServerMessageDispatcher(PlayerManager playerManager, UdpConnection connection, ClientManager clientManager, ServerNetworkManager serverNetworkManager)
+        public ServerMessageDispatcher(PlayerManager playerManager, UdpConnection connection,
+            ClientManager clientManager, ServerNetworkManager serverNetworkManager)
             : base(playerManager, connection, clientManager)
         {
             _serverNetworkManager = serverNetworkManager;
@@ -26,7 +28,12 @@ namespace Network
             _messageHandlers[MessageType.Position] = HandlePositionUpdate;
             _messageHandlers[MessageType.Ping] = HandlePing;
             _messageHandlers[MessageType.Id] = HandleIdMessage;
+            _messageHandlers[MessageType.ObjectCreate] = HandleObjectCreate;
+            _messageHandlers[MessageType.ObjectDestroy] = HandleObjectDestroy;
+            _messageHandlers[MessageType.ObjectUpdate] = HandleObjectUpdate;
+            _messageHandlers[MessageType.PlayerInput] = HandlePlayerInput;
         }
+
 
         private void HandleHandshake(byte[] data, IPEndPoint ip)
         {
@@ -37,7 +44,8 @@ namespace Network
 
                 if (!_playerManager.TryGetPlayer(clientId, out GameObject player))
                 {
-                    Debug.LogWarning($"[ServerMessageDispatcher] Player not found for client ID {clientId}, creating new player");
+                    Debug.LogWarning(
+                        $"[ServerMessageDispatcher] Player not found for client ID {clientId}, creating new player");
                 }
 
                 List<byte> newId = BitConverter.GetBytes((int)MessageType.Id).ToList();
@@ -125,6 +133,49 @@ namespace Network
         private void HandleIdMessage(byte[] data, IPEndPoint ip)
         {
             Debug.Log("[ServerMessageDispatcher] Received ID message from client (unexpected)");
+        }
+
+
+        private void HandleObjectDestroy(byte[] arg1, IPEndPoint arg2)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleObjectUpdate(byte[] arg1, IPEndPoint arg2)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleObjectCreate(byte[] arg1, IPEndPoint arg2)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandlePlayerInput(byte[] arg1, IPEndPoint arg2)
+        {
+            
+            try
+            {
+                if (arg1 == null || arg1.Length < sizeof(float) * 3)
+                {
+                    Debug.LogError("[ServerMessageDispatcher] Invalid player input data received");
+                    return;
+                }
+
+                PlayerInput input = _netPlayerInput.Deserialize(arg1);
+
+                if (!_clientManager.TryGetClientId(arg2, out int clientId))
+                {
+                    Debug.LogWarning($"[ServerMessageDispatcher] Player input from unknown client {arg2}");
+                    return;
+                }
+
+                _playerManager.UpdatePlayerInput(clientId, input);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[ServerMessageDispatcher] Error in HandlePlayerInput: {ex.Message}");
+            }
         }
     }
 }

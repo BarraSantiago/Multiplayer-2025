@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using Game;
 using Network.ClientDir;
 using Network.Messages;
 using UnityEngine;
@@ -13,6 +14,7 @@ namespace Network.interfaces
         protected readonly NetVector3 _netVector3 = new NetVector3();
         protected readonly NetPlayers _netPlayers = new NetPlayers();
         protected readonly NetString _netString = new NetString();
+        protected readonly NetPlayerInput _netPlayerInput = new NetPlayerInput();
         protected readonly NetHeartbeat _netHeartbeat = new NetHeartbeat();
         protected float _currentLatency = 0;
         public float CurrentLatency => _currentLatency;
@@ -22,12 +24,13 @@ namespace Network.interfaces
         public MessageTracker _messageTracker = new MessageTracker();
         protected const float ResendInterval = 1.0f;
         protected float _lastResendCheckTime = 0f;
-        
+
         protected UdpConnection _connection;
         protected PlayerManager _playerManager;
         protected ClientManager _clientManager;
 
-        protected BaseMessageDispatcher(PlayerManager playerManager, UdpConnection connection, ClientManager clientManager)
+        protected BaseMessageDispatcher(PlayerManager playerManager, UdpConnection connection,
+            ClientManager clientManager)
         {
             _playerManager = playerManager;
             _connection = connection;
@@ -58,7 +61,8 @@ namespace Network.interfaces
             {
                 if (data == null)
                 {
-                    Debug.LogWarning($"[MessageDispatcher] Dropped malformed packet from {ip}: insufficient data length ({data?.Length ?? 0} bytes)");
+                    Debug.LogWarning(
+                        $"[MessageDispatcher] Dropped malformed packet from {ip}: insufficient data length ({data?.Length ?? 0} bytes)");
                     return false;
                 }
 
@@ -93,7 +97,8 @@ namespace Network.interfaces
             SendMessage(ackData.ToArray(), MessageType.Acknowledgment, target, false, false);
         }
 
-        public byte[] ConvertToEnvelope(byte[] data, MessageType messageType, IPEndPoint target, bool isImportant, bool isCritical = false)
+        public byte[] ConvertToEnvelope(byte[] data, MessageType messageType, IPEndPoint target, bool isImportant,
+            bool isCritical = false)
         {
             int messageNumber = _messageTracker.GetNextMessageNumber(messageType);
 
@@ -116,7 +121,8 @@ namespace Network.interfaces
             return serializedEnvelope;
         }
 
-        public virtual void SendMessage(byte[] data, MessageType messageType, IPEndPoint target, bool isImportant, bool isCritical = false)
+        public virtual void SendMessage(byte[] data, MessageType messageType, IPEndPoint target, bool isImportant,
+            bool isCritical = false)
         {
             int messageNumber = _messageTracker.GetNextMessageNumber(messageType);
 
@@ -159,6 +165,29 @@ namespace Network.interfaces
                     throw new ArgumentException("Data must be Vector3 for Position messages");
                 case MessageType.Ping:
                     return null;
+                case MessageType.Id:
+                    if (data is int idValue) return BitConverter.GetBytes(idValue);
+                    throw new ArgumentException("Data must be int for Id messages");
+                // TODO serialization
+                case MessageType.ObjectCreate:
+                case MessageType.ObjectDestroy:
+                case MessageType.ObjectUpdate:
+                    return null;
+                case MessageType.Acknowledgment:
+                    if (data is int ackedNumber)
+                    {
+                        byte[] ackData = new byte[4];
+                        Buffer.BlockCopy(BitConverter.GetBytes(ackedNumber), 0, ackData, 0, 4);
+                        return ackData;
+                    }
+
+                    throw new ArgumentException("Data must be int for Acknowledgment messages");
+                case MessageType.PlayerInput:
+                    if (data is PlayerInput input)
+                    {
+                        return _netPlayerInput.Serialize(input);
+                    }
+                    throw new ArgumentException("Data must be PlayerInput for PlayerInput messages");
                 default:
                     throw new ArgumentOutOfRangeException(nameof(messageType));
             }
@@ -172,7 +201,8 @@ namespace Network.interfaces
 
             _lastResendCheckTime = currentTime;
 
-            Dictionary<IPEndPoint, List<MessageTracker.PendingMessage>> pendingMessages = _messageTracker.GetPendingMessages();
+            Dictionary<IPEndPoint, List<MessageTracker.PendingMessage>> pendingMessages =
+                _messageTracker.GetPendingMessages();
             foreach (KeyValuePair<IPEndPoint, List<MessageTracker.PendingMessage>> endpointMessages in pendingMessages)
             {
                 IPEndPoint target = endpointMessages.Key;
@@ -183,7 +213,8 @@ namespace Network.interfaces
                     {
                         AbstractNetworkManager.Instance.SendMessage(message.Data, target);
                         _messageTracker.UpdateMessageSentTime(target, message.MessageType, message.MessageNumber);
-                        Debug.Log($"[MessageDispatcher] Resending message: Type={message.MessageType}, Number={message.MessageNumber} to {target}");
+                        Debug.Log(
+                            $"[MessageDispatcher] Resending message: Type={message.MessageType}, Number={message.MessageNumber} to {target}");
                     }
                 }
             }

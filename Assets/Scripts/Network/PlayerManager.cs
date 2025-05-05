@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Game;
 using UnityEngine;
 
 namespace Network
@@ -8,6 +9,7 @@ namespace Network
     {
         private readonly GameObject _playerPrefab;
         private readonly ConcurrentDictionary<int, GameObject> _players = new ConcurrentDictionary<int, GameObject>();
+        private readonly ConcurrentDictionary<int, Controller> _playerControllers = new ConcurrentDictionary<int, Controller>();
 
         public PlayerManager(GameObject playerPrefab)
         {
@@ -74,9 +76,20 @@ namespace Network
         {
             foreach (GameObject player in _players.Values)
             {
-                if (player != null) Object.Destroy(player);
+                if (player) Object.Destroy(player);
             }
             _players.Clear();
+        }
+
+        public void UpdatePlayerInput(int clientId, PlayerInput input)
+        {
+            if (!_players.TryGetValue(clientId, out GameObject player) || !player) return;
+            Controller controller = _playerControllers[clientId];
+            
+            if (controller)
+            {
+                controller.UpdateInput(input);
+            }
         }
     }
 }
