@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using Network.ClientDir;
+using Network.interfaces;
 using Network.Messages;
 using UnityEngine;
 

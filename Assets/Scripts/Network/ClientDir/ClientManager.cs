@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
 
-namespace Network
+namespace Network.ClientDir
 {
     public class ClientManager
     {

@@ -48,7 +48,7 @@ namespace Network.Messages
         
         public void ConfirmMessage(IPEndPoint target, MessageType type, int number)
         {
-            if (_pendingMessages.TryGetValue(target, out var messages))
+            if (_pendingMessages.TryGetValue(target, out Dictionary<(MessageType, int), PendingMessage> messages))
             {
                 messages.Remove((type, number));
             }
@@ -56,8 +56,8 @@ namespace Network.Messages
 
         public void UpdateMessageSentTime(IPEndPoint target, MessageType type, int number)
         {
-            if (_pendingMessages.TryGetValue(target, out var messages) && 
-                messages.TryGetValue((type, number), out var message))
+            if (_pendingMessages.TryGetValue(target, out Dictionary<(MessageType, int), PendingMessage> messages) && 
+                messages.TryGetValue((type, number), out PendingMessage message))
             {
                 message.LastSentTime = Time.realtimeSinceStartup;
             }
@@ -68,7 +68,7 @@ namespace Network.Messages
             Dictionary<IPEndPoint, List<PendingMessage>> result = 
                 new Dictionary<IPEndPoint, List<PendingMessage>>();
             
-            foreach (var endpointEntry in _pendingMessages)
+            foreach (KeyValuePair<IPEndPoint, Dictionary<(MessageType, int), PendingMessage>> endpointEntry in _pendingMessages)
             {
                 result[endpointEntry.Key] = endpointEntry.Value.Values.ToList();
             }

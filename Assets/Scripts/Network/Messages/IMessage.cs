@@ -3,12 +3,16 @@ namespace Network.Messages
     public enum MessageType
     {
         None = -2,
-        HandShake = -1,
-        Console = 0,
-        Position = 1,
+        HandShake,
+        Console,
+        Position,
         Ping,
         Id,
-        Acknowledgment
+        Acknowledgment,
+        PlayerInput,
+        ObjectCreate,
+        ObjectDestroy,
+        ObjectUpdate,
     }
 
     public interface IMessage<T>

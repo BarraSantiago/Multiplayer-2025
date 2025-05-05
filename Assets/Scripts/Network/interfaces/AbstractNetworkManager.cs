@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Net;
-using Network.interfaces;
+using Network.ClientDir;
 using Network.Messages;
 using UnityEngine;
 using Utils;
 
-namespace Network
+namespace Network.interfaces
 {
     public abstract class AbstractNetworkManager : MonoBehaviourSingleton<AbstractNetworkManager>, IReceiveData, IDisposable
     {

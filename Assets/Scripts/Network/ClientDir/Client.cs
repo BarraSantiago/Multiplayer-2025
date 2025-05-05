@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Network
+namespace Network.ClientDir
 {
     public struct Client
     {

@@ -2,11 +2,12 @@
 using System.Linq;
 using System.Net;
 using Game;
+using Network.interfaces;
 using Network.Messages;
 using TMPro;
 using UnityEngine;
 
-namespace Network
+namespace Network.ClientDir
 {
     public class ClientNetworkManager : AbstractNetworkManager
     {

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Network.ClientDir;
+using Network.interfaces;
 using Network.Messages;
 using UnityEngine;
 
@@ -33,7 +35,7 @@ namespace Network
                 int clientId = _clientManager.AddClient(ip);
                 _clientManager.UpdateClientTimestamp(clientId);
 
-                if (!_playerManager.TryGetPlayer(clientId, out var player))
+                if (!_playerManager.TryGetPlayer(clientId, out GameObject player))
                 {
                     Debug.LogWarning($"[ServerMessageDispatcher] Player not found for client ID {clientId}, creating new player");
                 }

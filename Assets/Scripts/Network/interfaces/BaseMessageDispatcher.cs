@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
+using Network.ClientDir;
 using Network.Messages;
 using UnityEngine;
 
-namespace Network
+namespace Network.interfaces
 {
     public abstract class BaseMessageDispatcher
     {
@@ -173,7 +173,7 @@ namespace Network
             _lastResendCheckTime = currentTime;
 
             Dictionary<IPEndPoint, List<MessageTracker.PendingMessage>> pendingMessages = _messageTracker.GetPendingMessages();
-            foreach (var endpointMessages in pendingMessages)
+            foreach (KeyValuePair<IPEndPoint, List<MessageTracker.PendingMessage>> endpointMessages in pendingMessages)
             {
                 IPEndPoint target = endpointMessages.Key;
                 foreach (MessageTracker.PendingMessage message in endpointMessages.Value)

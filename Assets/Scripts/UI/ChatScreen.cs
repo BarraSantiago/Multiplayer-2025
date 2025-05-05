@@ -1,4 +1,6 @@
 ﻿using Network;
+using Network.ClientDir;
+using Network.interfaces;
 using Network.Messages;
 using UnityEngine;
 using UnityEngine.UI;
