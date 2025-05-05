@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Network.interfaces;
 using Network.Messages;
+using Network.Server;
 using UnityEngine;
 using Utils;
 
@@ -58,18 +59,6 @@ namespace Network.Factory
             NetworkObject networkObject = instance.GetComponent<NetworkObject>();
             networkObject.Initialize(netId, isOwner);
 
-            if (AbstractNetworkManager.Instance is ServerNetworkManager serverManager)
-            {
-                NetworkObjectCreateMessage createMsg = new NetworkObjectCreateMessage
-                {
-                    NetworkId = netId,
-                    PrefabType = netObj,
-                    Position = position,
-                    Rotation = rotation
-                };
-
-                serverManager.SerializedBroadcast(createMsg, MessageType.ObjectCreate);
-            }
 
             return networkObject;
         }

@@ -8,11 +8,11 @@ namespace Game
         public float JumpForce = 5f;
         public bool IsGrounded = true;
 
-        private Rigidbody2D _rigidbody2D;
+        private Rigidbody _rigidbody2D;
 
         private void Start()
         {
-            _rigidbody2D = GetComponent<Rigidbody2D>();
+            _rigidbody2D = GetComponent<Rigidbody>();
         }
 
         private void HandleMovement(Vector2 moveDirection)
@@ -25,7 +25,7 @@ namespace Game
         {
             if (IsGrounded && isJumping)
             {
-                _rigidbody2D.AddForce(Vector2.up * JumpForce, ForceMode2D.Impulse);
+                _rigidbody2D.AddForce(Vector2.up * JumpForce, ForceMode.Impulse);
                 IsGrounded = false;
             }
         }

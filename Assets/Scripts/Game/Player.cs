@@ -40,8 +40,8 @@ namespace Game
         {
             // Movement input
             Vector2 moveDirection = Vector2.zero;
-            if (Input.GetKey(KeyCode.W)) moveDirection.y += 1;
-            if (Input.GetKey(KeyCode.S)) moveDirection.y -= 1;
+            //if (Input.GetKey(KeyCode.W)) moveDirection.y += 1;
+            //if (Input.GetKey(KeyCode.S)) moveDirection.y -= 1;
             if (Input.GetKey(KeyCode.A)) moveDirection.x -= 1;
             if (Input.GetKey(KeyCode.D)) moveDirection.x += 1;
 
@@ -50,7 +50,7 @@ namespace Game
                 
             bool isShooting = Input.GetKey(KeyCode.Mouse0);
             bool isJumping = Input.GetKey(KeyCode.Space);
-            bool isCrouching = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.C);
+            bool isCrouching = Input.GetKey(KeyCode.LeftShift);
 
             PlayerInput inputData = new PlayerInput
             {

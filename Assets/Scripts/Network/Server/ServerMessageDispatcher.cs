@@ -4,11 +4,12 @@ using System.Linq;
 using System.Net;
 using Game;
 using Network.ClientDir;
+using Network.Factory;
 using Network.interfaces;
 using Network.Messages;
 using UnityEngine;
 
-namespace Network
+namespace Network.Server
 {
     public class ServerMessageDispatcher : BaseMessageDispatcher
     {
@@ -153,7 +154,6 @@ namespace Network
 
         private void HandlePlayerInput(byte[] arg1, IPEndPoint arg2)
         {
-            
             try
             {
                 if (arg1 == null || arg1.Length < sizeof(float) * 3)
@@ -171,6 +171,27 @@ namespace Network
                 }
 
                 _playerManager.UpdatePlayerInput(clientId, input);
+
+
+                GameObject player = _playerManager.GetAllPlayers()[clientId];
+                Vector3 pos = player.transform.position;
+
+                if (input.IsShooting)
+                {
+                    NetworkObject bullet = NetworkObjectFactory.Instance.CreateNetworkObject(player.transform.position,
+                        Vector3.zero, NetObjectTypes.Projectile);
+                    NetworkObjectCreateMessage createMsg = new NetworkObjectCreateMessage
+                    {
+                        NetworkId = bullet.NetworkId,
+                        PrefabType = NetObjectTypes.Projectile,
+                        Position = bullet.transform.position,
+                        Rotation = Vector3.zero
+                    };
+
+                    _serverNetworkManager.SerializedBroadcast(createMsg, MessageType.ObjectCreate);
+                }
+
+                _serverNetworkManager.SerializedBroadcast(pos, MessageType.Position, clientId);
             }
             catch (Exception ex)
             {

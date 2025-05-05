@@ -18,8 +18,7 @@ namespace Network
 
         public bool HasPlayer(int clientId) => _players.ContainsKey(clientId);
         
-        public bool TryGetPlayer(int clientId, out GameObject player) => 
-            _players.TryGetValue(clientId, out player);
+        public bool TryGetPlayer(int clientId, out GameObject player) => _players.TryGetValue(clientId, out player);
             
         public IReadOnlyDictionary<int, GameObject> GetAllPlayers() => _players;
 
@@ -31,7 +30,10 @@ namespace Network
                 player.transform.position = position.Value;
             }
             
+            Controller controller = player.AddComponent<Controller>();
             _players[clientId] = player;
+            _playerControllers[clientId] = controller;
+            
             return player;
         }
         
@@ -63,7 +65,7 @@ namespace Network
             
             foreach (KeyValuePair<int, GameObject> kvp in _players)
             {
-                if (kvp.Value != null)
+                if (kvp.Value)
                 {
                     positions[kvp.Key] = kvp.Value.transform.position;
                 }

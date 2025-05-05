@@ -6,7 +6,7 @@ using Network.interfaces;
 using Network.Messages;
 using UnityEngine;
 
-namespace Network
+namespace Network.Server
 {
     public class ServerNetworkManager : AbstractNetworkManager
     {
