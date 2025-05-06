@@ -235,6 +235,7 @@ GameObject:
   m_Component:
   - component: {fileID: 180350410}
   - component: {fileID: 180350411}
+  - component: {fileID: 180350412}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -274,6 +275,21 @@ MonoBehaviour:
   clientManagerPrefab: {fileID: 736312552749154507, guid: 0bf39c1f89d6bb44d8785eca65b314f9,
     type: 3}
   DisconnectButton: {fileID: 1108887347}
+--- !u!114 &180350412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 180350408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ea9ea6c7388416799916cb02f61783b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  registeredPrefabs:
+  - {fileID: 256864484462788253, guid: f2ff0abf5115678499af0cd367990497, type: 3}
+  - {fileID: 5244531302253822717, guid: 87e1900007bf7764a80701707b2d1111, type: 3}
 --- !u!1 &194703369
 GameObject:
   m_ObjectHideFlags: 0

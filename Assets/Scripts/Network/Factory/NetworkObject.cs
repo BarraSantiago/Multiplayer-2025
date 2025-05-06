@@ -7,11 +7,13 @@ namespace Network.Factory
     {
         public int NetworkId { get; private set; } = -1;
         public bool IsOwner { get; private set; } = false;
+        public NetObjectTypes PrefabType { get; set; } = NetObjectTypes.None;
         
-        public virtual void Initialize(int networkId, bool isOwner)
+        public virtual void Initialize(int networkId, bool isOwner, NetObjectTypes prefabType)
         {
             NetworkId = networkId;
             IsOwner = isOwner;
+            PrefabType = prefabType;
             
             NetworkObjectFactory.Instance.RegisterObject(this);
         }

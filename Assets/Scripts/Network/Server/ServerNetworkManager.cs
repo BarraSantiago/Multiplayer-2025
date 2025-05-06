@@ -55,7 +55,6 @@ namespace Network.Server
         {
             if (!_playerManager.HasPlayer(clientId))
             {
-                _playerManager.CreatePlayer(clientId);
             }
         }
 

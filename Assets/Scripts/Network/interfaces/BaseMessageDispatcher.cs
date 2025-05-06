@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using Game;
 using Network.ClientDir;
+using Network.Factory;
 using Network.Messages;
 using UnityEngine;
 
@@ -10,12 +11,13 @@ namespace Network.interfaces
 {
     public abstract class BaseMessageDispatcher
     {
-        protected Dictionary<MessageType, Action<byte[], IPEndPoint>> _messageHandlers;
+        protected readonly Dictionary<MessageType, Action<byte[], IPEndPoint>> _messageHandlers;
         protected readonly NetVector3 _netVector3 = new NetVector3();
         protected readonly NetPlayers _netPlayers = new NetPlayers();
         protected readonly NetString _netString = new NetString();
         protected readonly NetPlayerInput _netPlayerInput = new NetPlayerInput();
         protected readonly NetHeartbeat _netHeartbeat = new NetHeartbeat();
+        protected readonly NetCreateObject _netCreateObject = new NetCreateObject();
         protected float _currentLatency = 0;
         public float CurrentLatency => _currentLatency;
         public static Action<string> onConsoleMessageReceived;
@@ -170,6 +172,11 @@ namespace Network.interfaces
                     throw new ArgumentException("Data must be int for Id messages");
                 // TODO serialization
                 case MessageType.ObjectCreate:
+                    if(data is NetworkObjectCreateMessage createMessage)
+                    {
+                        return _netCreateObject.Serialize(createMessage);
+                    }
+                    throw new ArgumentException("Data must be NetworkObjectCreateMessage");
                 case MessageType.ObjectDestroy:
                 case MessageType.ObjectUpdate:
                     return null;

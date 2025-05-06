@@ -41,15 +41,7 @@ namespace Network.ClientDir
                     return;
                 }
 
-                Dictionary<int, Vector3> newPlayersDic = _netPlayers.Deserialize(data);
-                int newPlayersAdded = 0;
-
-                foreach (KeyValuePair<int, Vector3> kvp in newPlayersDic)
-                {
-                    if (_playerManager.HasPlayer(kvp.Key)) continue;
-                    _playerManager.CreatePlayer(kvp.Key, kvp.Value);
-                    newPlayersAdded++;
-                }
+                
             }
             catch (Exception ex)
             {
@@ -128,8 +120,7 @@ namespace Network.ClientDir
         {
             try
             {
-                NetworkObjectCreateMessage createMsg = JsonUtility.FromJson<NetworkObjectCreateMessage>(
-                    System.Text.Encoding.UTF8.GetString(data));
+                NetworkObjectCreateMessage createMsg = _netCreateObject.Deserialize(data);
 
                 NetworkObjectFactory.Instance.HandleCreateObjectMessage(createMsg);
             }

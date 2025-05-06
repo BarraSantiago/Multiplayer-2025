@@ -51,14 +51,12 @@ namespace Network.Factory
             bool isOwner = false)
         {
             if (!_prefabs.TryGetValue(netObj, out GameObject prefab)) return null;
-
-
+            
             int netId = GetNextNetworkId();
             Quaternion rot = Quaternion.Euler(rotation);
             GameObject instance = Instantiate(prefab, position, rot);
             NetworkObject networkObject = instance.GetComponent<NetworkObject>();
-            networkObject.Initialize(netId, isOwner);
-
+            networkObject.Initialize(netId, isOwner, netObj);
 
             return networkObject;
         }
@@ -67,7 +65,7 @@ namespace Network.Factory
         {
             if (obj.NetworkId == -1)
             {
-                obj.Initialize(GetNextNetworkId(), true);
+                obj.Initialize(GetNextNetworkId(), true, obj.PrefabType);
             }
 
             _networkObjects[obj.NetworkId] = obj;
@@ -91,6 +89,11 @@ namespace Network.Factory
             return _networkObjects.TryGetValue(networkId, out NetworkObject obj) ? obj : null;
         }
 
+        public Dictionary<int, NetworkObject> GetAllNetworkObjects()
+        {
+            return _networkObjects;
+        }
+
         public void DestroyNetworkObject(int networkId)
         {
             if (_networkObjects.TryGetValue(networkId, out NetworkObject obj))
@@ -107,14 +110,15 @@ namespace Network.Factory
 
         public void HandleCreateObjectMessage(NetworkObjectCreateMessage createMsg)
         {
-            NetObjectTypes objectTypeType = createMsg.PrefabType;
-            
-            if (objectTypeType == null) return;
-            if (!_prefabs.TryGetValue(objectTypeType, out GameObject prefab)) return;
+            NetObjectTypes netObjectType = createMsg.PrefabType;
+
+            if (netObjectType == null) return;
+            if (!_prefabs.TryGetValue(netObjectType, out GameObject prefab)) return;
 
             GameObject instance = Instantiate(prefab, createMsg.Position, Quaternion.Euler(createMsg.Rotation));
             NetworkObject networkObject = instance.GetComponent<NetworkObject>();
-            networkObject.Initialize(createMsg.NetworkId, false);
+
+            networkObject.Initialize(createMsg.NetworkId, false, netObjectType);
         }
     }
 

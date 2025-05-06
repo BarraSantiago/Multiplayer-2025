@@ -40,30 +40,51 @@ namespace Network.Server
         {
             try
             {
+                Dictionary<int, NetworkObject> networkObjects = NetworkObjectFactory.Instance.GetAllNetworkObjects();
                 int clientId = _clientManager.AddClient(ip);
+                GameObject player = CreateNetworkObject(Vector3.zero, Vector3.zero, NetObjectTypes.Player).gameObject;
+                _playerManager.CreatePlayer(clientId, player);
                 _clientManager.UpdateClientTimestamp(clientId);
-
-                if (!_playerManager.TryGetPlayer(clientId, out GameObject player))
-                {
-                    Debug.LogWarning(
-                        $"[ServerMessageDispatcher] Player not found for client ID {clientId}, creating new player");
-                }
 
                 List<byte> newId = BitConverter.GetBytes((int)MessageType.Id).ToList();
                 newId.AddRange(BitConverter.GetBytes(clientId));
                 _connection.Send(newId.ToArray(), ip);
-
+                
                 _serverNetworkManager.SerializedBroadcast(player.transform.position, MessageType.HandShake, clientId);
 
                 _netPlayers.Data = _playerManager.GetAllPlayers();
+                SendObjectsToClient(ip, networkObjects);
                 byte[] msg = ConvertToEnvelope(_netPlayers.Serialize(), MessageType.HandShake, ip, true);
                 _connection.Send(msg, ip);
+                
 
                 Debug.Log($"[ServerMessageDispatcher] New client {clientId} connected from {ip}");
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[ServerMessageDispatcher] Error in HandleHandshake: {ex.Message}");
+            }
+        }
+
+        private void SendObjectsToClient(IPEndPoint ip, Dictionary<int,NetworkObject> networkObjects)
+        {
+            foreach (var kvp in networkObjects)
+            {
+                NetworkObject networkObject = kvp.Value;
+                if (networkObject == null) continue;
+
+                NetworkObjectCreateMessage createMsg = new NetworkObjectCreateMessage
+                {
+                    NetworkId = networkObject.NetworkId,
+                    PrefabType = networkObject.PrefabType,
+                    Position = networkObject.transform.position,
+                    Rotation = networkObject.transform.rotation.eulerAngles
+                };
+
+                 
+                
+                byte[] msg = ConvertToEnvelope(_netCreateObject.Serialize(createMsg), MessageType.ObjectCreate, ip, true);
+                _connection.Send(msg, ip);
             }
         }
 
@@ -197,6 +218,21 @@ namespace Network.Server
             {
                 Debug.LogError($"[ServerMessageDispatcher] Error in HandlePlayerInput: {ex.Message}");
             }
+        }
+
+        private NetworkObject CreateNetworkObject(Vector3 position, Vector3 rotation, NetObjectTypes objectType)
+        {
+            NetworkObject networkObject = NetworkObjectFactory.Instance.CreateNetworkObject(position, rotation, objectType);
+            NetworkObjectCreateMessage createMsg = new NetworkObjectCreateMessage
+            {
+                NetworkId = networkObject.NetworkId,
+                PrefabType = objectType,
+                Position = networkObject.transform.position,
+                Rotation = rotation
+            };
+            _serverNetworkManager.SerializedBroadcast(createMsg, MessageType.ObjectCreate);
+            
+            return networkObject;
         }
     }
 }

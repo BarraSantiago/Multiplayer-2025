@@ -22,14 +22,8 @@ namespace Network
             
         public IReadOnlyDictionary<int, GameObject> GetAllPlayers() => _players;
 
-        public GameObject CreatePlayer(int clientId, Vector3? position = null)
+        public GameObject CreatePlayer(int clientId, GameObject player)
         {
-            GameObject player = Object.Instantiate(_playerPrefab);
-            if (position.HasValue)
-            {
-                player.transform.position = position.Value;
-            }
-            
             Controller controller = player.AddComponent<Controller>();
             _players[clientId] = player;
             _playerControllers[clientId] = controller;
