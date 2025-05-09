@@ -29,17 +29,21 @@ namespace Network.ClientDir
             _messageHandlers[MessageType.ObjectCreate] = HandleObjectCreate;
             _messageHandlers[MessageType.ObjectDestroy] = HandleObjectDestroy;
             _messageHandlers[MessageType.ObjectUpdate] = HandleObjectUpdate;
+            _messageHandlers[MessageType.Acknowledgment] = HandleAcknowledgment;
+        }
+
+        private void HandleAcknowledgment(byte[] arg1, IPEndPoint arg2)
+        {
+            MessageType ackedType = (MessageType)BitConverter.ToInt32(arg1, 0);
+            int ackedNumber = BitConverter.ToInt32(arg1, 4);
+            
+            MessageTracker.ConfirmMessage(arg2, ackedType, ackedNumber);
         }
 
         private void HandleHandshake(byte[] data, IPEndPoint ip)
         {
             try
             {
-                if (data == null)
-                {
-                    Debug.LogError("[ClientMessageDispatcher] Received null handshake data from server");
-                    return;
-                }
 
                 
             }
@@ -74,8 +78,10 @@ namespace Network.ClientDir
                 }
 
                 Vector3 position = _netVector3.Deserialize(data);
-                int clientId = _netVector3.GetId(data);
-                _playerManager.UpdatePlayerPosition(clientId, position);
+                int objectId = _netVector3.GetId(data);
+                
+                //_playerManager.UpdatePlayerPosition(objectId, position);
+                NetworkObjectFactory.Instance.GetAllNetworkObjects()[objectId].transform.position = position;
             }
             catch (Exception ex)
             {
@@ -90,7 +96,7 @@ namespace Network.ClientDir
                 _currentLatency = (Time.realtimeSinceStartup - _lastPing) * 1000;
                 _lastPing = Time.realtimeSinceStartup;
 
-                _clientNetworkManager.SendToServer(null, MessageType.Ping, true);
+                _clientNetworkManager.SendToServer(null, MessageType.Ping);
             }
             catch (Exception ex)
             {

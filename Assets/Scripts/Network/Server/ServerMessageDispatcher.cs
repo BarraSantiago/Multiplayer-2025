@@ -13,13 +13,10 @@ namespace Network.Server
 {
     public class ServerMessageDispatcher : BaseMessageDispatcher
     {
-        private readonly ServerNetworkManager _serverNetworkManager;
 
-        public ServerMessageDispatcher(PlayerManager playerManager, UdpConnection connection,
-            ClientManager clientManager, ServerNetworkManager serverNetworkManager)
+        public ServerMessageDispatcher(PlayerManager playerManager, UdpConnection connection, ClientManager clientManager)
             : base(playerManager, connection, clientManager)
         {
-            _serverNetworkManager = serverNetworkManager;
         }
 
         protected override void InitializeMessageHandlers()
@@ -33,6 +30,15 @@ namespace Network.Server
             _messageHandlers[MessageType.ObjectDestroy] = HandleObjectDestroy;
             _messageHandlers[MessageType.ObjectUpdate] = HandleObjectUpdate;
             _messageHandlers[MessageType.PlayerInput] = HandlePlayerInput;
+            _messageHandlers[MessageType.Acknowledgment] = HandleAcknowledgment;
+        }
+
+        private void HandleAcknowledgment(byte[] arg1, IPEndPoint arg2)
+        {
+            MessageType ackedType = (MessageType)BitConverter.ToInt32(arg1, 0);
+            int ackedNumber = BitConverter.ToInt32(arg1, 4);
+
+            MessageTracker.ConfirmMessage(arg2, ackedType, ackedNumber);
         }
 
 
@@ -50,7 +56,7 @@ namespace Network.Server
                 newId.AddRange(BitConverter.GetBytes(clientId));
                 _connection.Send(newId.ToArray(), ip);
                 
-                _serverNetworkManager.SerializedBroadcast(player.transform.position, MessageType.HandShake, clientId);
+                ServerNetworkManager.OnSerializedBroadcast.Invoke(player.transform.position, MessageType.HandShake, clientId);
 
                 _netPlayers.Data = _playerManager.GetAllPlayers();
                 SendObjectsToClient(ip, networkObjects);
@@ -97,7 +103,7 @@ namespace Network.Server
 
                 if (string.IsNullOrEmpty(message)) return;
 
-                _serverNetworkManager.SerializedBroadcast(message, MessageType.Console);
+                ServerNetworkManager.OnSerializedBroadcast.Invoke(message, MessageType.Console, -1);
             }
             catch (Exception ex)
             {
@@ -125,7 +131,7 @@ namespace Network.Server
 
                 _playerManager.UpdatePlayerPosition(clientId, position);
 
-                _serverNetworkManager.SerializedBroadcast(position, MessageType.Position, clientId);
+                ServerNetworkManager.OnSerializedBroadcast.Invoke(position, MessageType.Position, clientId);
             }
             catch (Exception ex)
             {
@@ -144,7 +150,7 @@ namespace Network.Server
                 }
 
                 _clientManager.UpdateClientTimestamp(clientId);
-                _serverNetworkManager.SendToClient(clientId, null, MessageType.Ping, true);
+                ServerNetworkManager.OnSendToClient.Invoke(clientId, null, MessageType.Ping, false);
             }
             catch (Exception ex)
             {
@@ -209,10 +215,10 @@ namespace Network.Server
                         Rotation = Vector3.zero
                     };
 
-                    _serverNetworkManager.SerializedBroadcast(createMsg, MessageType.ObjectCreate);
+                    ServerNetworkManager.OnSerializedBroadcast.Invoke(createMsg, MessageType.ObjectCreate, -1);
                 }
 
-                _serverNetworkManager.SerializedBroadcast(pos, MessageType.Position, clientId);
+                ServerNetworkManager.OnSerializedBroadcast.Invoke(pos, MessageType.Position, clientId);
             }
             catch (Exception ex)
             {
@@ -230,7 +236,7 @@ namespace Network.Server
                 Position = networkObject.transform.position,
                 Rotation = rotation
             };
-            _serverNetworkManager.SerializedBroadcast(createMsg, MessageType.ObjectCreate);
+            ServerNetworkManager.OnSerializedBroadcast.Invoke(createMsg, MessageType.ObjectCreate, -1);
             
             return networkObject;
         }

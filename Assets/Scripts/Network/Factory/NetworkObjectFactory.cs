@@ -51,7 +51,7 @@ namespace Network.Factory
             bool isOwner = false)
         {
             if (!_prefabs.TryGetValue(netObj, out GameObject prefab)) return null;
-            
+
             int netId = GetNextNetworkId();
             Quaternion rot = Quaternion.Euler(rotation);
             GameObject instance = Instantiate(prefab, position, rot);
@@ -73,20 +73,17 @@ namespace Network.Factory
 
         public void UnregisterObject(int networkId)
         {
-            if (_networkObjects.ContainsKey(networkId))
-            {
-                _networkObjects.Remove(networkId);
+            if (!_networkObjects.Remove(networkId)) return;
 
-                if (AbstractNetworkManager.Instance is ServerNetworkManager serverManager)
-                {
-                    serverManager.SerializedBroadcast(networkId, MessageType.ObjectDestroy);
-                }
+            if (AbstractNetworkManager.Instance is ServerNetworkManager serverManager)
+            {
+                serverManager.SerializedBroadcast(networkId, MessageType.ObjectDestroy);
             }
         }
 
         public NetworkObject GetNetworkObject(int networkId)
         {
-            return _networkObjects.TryGetValue(networkId, out NetworkObject obj) ? obj : null;
+            return _networkObjects.GetValueOrDefault(networkId);
         }
 
         public Dictionary<int, NetworkObject> GetAllNetworkObjects()
@@ -96,11 +93,9 @@ namespace Network.Factory
 
         public void DestroyNetworkObject(int networkId)
         {
-            if (_networkObjects.TryGetValue(networkId, out NetworkObject obj))
-            {
-                Destroy(obj.gameObject);
-                _networkObjects.Remove(networkId);
-            }
+            if (!_networkObjects.TryGetValue(networkId, out NetworkObject obj)) return;
+            Destroy(obj.gameObject);
+            _networkObjects.Remove(networkId);
         }
 
         private int GetNextNetworkId()
@@ -112,8 +107,13 @@ namespace Network.Factory
         {
             NetObjectTypes netObjectType = createMsg.PrefabType;
 
-            if (netObjectType == null) return;
             if (!_prefabs.TryGetValue(netObjectType, out GameObject prefab)) return;
+
+            if (_networkObjects.ContainsKey(createMsg.NetworkId))
+            {
+                Debug.LogWarning($"[NetworkObjectFactory] Object with ID {createMsg.NetworkId} already exists.");
+                return;
+            }
 
             GameObject instance = Instantiate(prefab, createMsg.Position, Quaternion.Euler(createMsg.Rotation));
             NetworkObject networkObject = instance.GetComponent<NetworkObject>();

@@ -15,12 +15,15 @@ namespace Network.Server
 
         private float _lastHeartbeatTime;
         private float _lastTimeoutCheck;
-
+        public static Action<object, MessageType, int> OnSerializedBroadcast;
+        public static Action<int, object,MessageType, bool> OnSendToClient;
         protected override void Awake()
         {
             base.Awake();
             _clientManager.OnClientConnected += OnClientConnected;
             _clientManager.OnClientDisconnected += OnClientDisconnected;
+            OnSerializedBroadcast += SerializedBroadcast;
+            OnSendToClient += SendToClient;
         }
 
         public void StartServer(int port)
@@ -30,7 +33,7 @@ namespace Network.Server
             try
             {
                 _connection = new UdpConnection(port, this);
-                _messageDispatcher = new ServerMessageDispatcher(_playerManager, _connection, _clientManager, this);
+                _messageDispatcher = new ServerMessageDispatcher(_playerManager, _connection, _clientManager);
 
                 Debug.Log($"[ServerNetworkManager] Server started on port {port}");
             }
@@ -93,7 +96,7 @@ namespace Network.Server
                     _connection.Send(data, client.Value.ipEndPoint);
                     if (isImportant)
                     {
-                        _messageDispatcher._messageTracker.AddPendingMessage(data, client.Value.ipEndPoint, messageType,
+                        _messageDispatcher.MessageTracker.AddPendingMessage(data, client.Value.ipEndPoint, messageType,
                             messageNumber);
                     }
                 }
@@ -170,6 +173,8 @@ namespace Network.Server
 
                 _clientManager.OnClientConnected -= OnClientConnected;
                 _clientManager.OnClientDisconnected -= OnClientDisconnected;
+                OnSerializedBroadcast -= SerializedBroadcast;
+                OnSendToClient -= SendToClient;
             }
             catch (Exception e)
             {

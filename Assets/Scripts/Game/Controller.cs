@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using Network.interfaces;
+using Network.Messages;
+using Network.Server;
+using UnityEngine;
 
 namespace Game
 {
@@ -6,26 +9,34 @@ namespace Game
     {
         public float Speed = 5f;
         public float JumpForce = 5f;
-        public bool IsGrounded = true;
+        public bool IsGrounded = false;
 
-        private Rigidbody _rigidbody2D;
+        private Rigidbody _rigidbody;
 
         private void Start()
         {
-            _rigidbody2D = GetComponent<Rigidbody>();
+            _rigidbody = gameObject.AddComponent<Rigidbody>();
+            _rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+            _rigidbody.useGravity = true;
         }
-
+        private Vector3 _position;
+        private void Update()
+        {
+            if(Mathf.Approximately(_position.sqrMagnitude, transform.position.sqrMagnitude)) return;
+            _position = transform.position;
+            ServerNetworkManager.OnSerializedBroadcast.Invoke(_position, MessageType.Position, -1);
+        }
         private void HandleMovement(Vector2 moveDirection)
         {
             Vector2 moveVelocity = moveDirection * Speed;
-            _rigidbody2D.linearVelocity = moveVelocity;
+            _rigidbody.linearVelocity = moveVelocity;
         }
 
         private void HandleJump(bool isJumping)
         {
             if (IsGrounded && isJumping)
             {
-                _rigidbody2D.AddForce(Vector2.up * JumpForce, ForceMode.Impulse);
+                _rigidbody.AddForce(Vector2.up * JumpForce, ForceMode.Impulse);
                 IsGrounded = false;
             }
         }
@@ -53,6 +64,7 @@ namespace Game
                 gameObject.transform.localScale = new Vector3(1, 1f, 1);
                 HandleMovement(input.MoveDirection);
                 HandleJump(input.IsJumping);
+                _position = transform.position;
             }
         }
     }

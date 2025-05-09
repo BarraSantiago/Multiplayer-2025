@@ -16,23 +16,21 @@ namespace Network.interfaces
         protected readonly NetPlayers _netPlayers = new NetPlayers();
         protected readonly NetString _netString = new NetString();
         protected readonly NetPlayerInput _netPlayerInput = new NetPlayerInput();
-        protected readonly NetHeartbeat _netHeartbeat = new NetHeartbeat();
         protected readonly NetCreateObject _netCreateObject = new NetCreateObject();
         protected float _currentLatency = 0;
         public float CurrentLatency => _currentLatency;
         public static Action<string> onConsoleMessageReceived;
         protected float _lastPing;
 
-        public MessageTracker _messageTracker = new MessageTracker();
-        protected const float ResendInterval = 1.0f;
+        public readonly MessageTracker MessageTracker = new MessageTracker();
+        protected const float ResendInterval = .1f;
         protected float _lastResendCheckTime = 0f;
 
         protected UdpConnection _connection;
         protected PlayerManager _playerManager;
         protected ClientManager _clientManager;
 
-        protected BaseMessageDispatcher(PlayerManager playerManager, UdpConnection connection,
-            ClientManager clientManager)
+        protected BaseMessageDispatcher(PlayerManager playerManager, UdpConnection connection, ClientManager clientManager)
         {
             _playerManager = playerManager;
             _connection = connection;
@@ -53,7 +51,7 @@ namespace Network.interfaces
                 offset += 4;
                 int ackedNumber = BitConverter.ToInt32(data, offset);
 
-                _messageTracker.ConfirmMessage(ip, ackedType, ackedNumber);
+                MessageTracker.ConfirmMessage(ip, ackedType, ackedNumber);
             };
         }
 
@@ -102,7 +100,7 @@ namespace Network.interfaces
         public byte[] ConvertToEnvelope(byte[] data, MessageType messageType, IPEndPoint target, bool isImportant,
             bool isCritical = false)
         {
-            int messageNumber = _messageTracker.GetNextMessageNumber(messageType);
+            int messageNumber = MessageTracker.GetNextMessageNumber(messageType);
 
             MessageEnvelope envelope = new MessageEnvelope
             {
@@ -117,7 +115,7 @@ namespace Network.interfaces
 
             if (isImportant && target != null)
             {
-                _messageTracker.AddPendingMessage(serializedEnvelope, target, messageType, messageNumber);
+                MessageTracker.AddPendingMessage(serializedEnvelope, target, messageType, messageNumber);
             }
 
             return serializedEnvelope;
@@ -126,7 +124,7 @@ namespace Network.interfaces
         public virtual void SendMessage(byte[] data, MessageType messageType, IPEndPoint target, bool isImportant,
             bool isCritical = false)
         {
-            int messageNumber = _messageTracker.GetNextMessageNumber(messageType);
+            int messageNumber = MessageTracker.GetNextMessageNumber(messageType);
 
             MessageEnvelope envelope = new MessageEnvelope
             {
@@ -141,7 +139,7 @@ namespace Network.interfaces
 
             if (isImportant)
             {
-                _messageTracker.AddPendingMessage(serializedEnvelope, target, messageType, messageNumber);
+                MessageTracker.AddPendingMessage(serializedEnvelope, target, messageType, messageNumber);
             }
 
             if (target == null)
@@ -208,20 +206,17 @@ namespace Network.interfaces
 
             _lastResendCheckTime = currentTime;
 
-            Dictionary<IPEndPoint, List<MessageTracker.PendingMessage>> pendingMessages =
-                _messageTracker.GetPendingMessages();
+            Dictionary<IPEndPoint, List<MessageTracker.PendingMessage>> pendingMessages = MessageTracker.GetPendingMessages();
             foreach (KeyValuePair<IPEndPoint, List<MessageTracker.PendingMessage>> endpointMessages in pendingMessages)
             {
                 IPEndPoint target = endpointMessages.Key;
                 foreach (MessageTracker.PendingMessage message in endpointMessages.Value)
                 {
-                    // Only resend messages that have been waiting long enough
                     if (currentTime - message.LastSentTime >= ResendInterval)
                     {
                         AbstractNetworkManager.Instance.SendMessage(message.Data, target);
-                        _messageTracker.UpdateMessageSentTime(target, message.MessageType, message.MessageNumber);
-                        Debug.Log(
-                            $"[MessageDispatcher] Resending message: Type={message.MessageType}, Number={message.MessageNumber} to {target}");
+                        MessageTracker.UpdateMessageSentTime(target, message.MessageType, message.MessageNumber);
+                        Debug.Log($"[MessageDispatcher] Resending message: Type={message.MessageType}, Number={message.MessageNumber} to {target}");
                     }
                 }
             }
