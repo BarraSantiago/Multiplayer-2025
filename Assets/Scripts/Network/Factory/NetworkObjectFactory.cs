@@ -15,13 +15,21 @@ namespace Network.Factory
         Projectile
     }
 
+    [Serializable]
+    public class NetworkObjectCreateMessage
+    {
+        public int NetworkId;
+        public NetObjectTypes PrefabType;
+        public Vector3 Position;
+        public Vector3 Rotation;
+    }
+
     public class NetworkObjectFactory : MonoBehaviourSingleton<NetworkObjectFactory>
     {
+        [SerializeField] private List<GameObject> registeredPrefabs = new List<GameObject>();
         private readonly Dictionary<int, NetworkObject> _networkObjects = new Dictionary<int, NetworkObject>();
         private readonly Dictionary<NetObjectTypes, GameObject> _prefabs = new Dictionary<NetObjectTypes, GameObject>();
         private int _networkIdCounter = 0;
-
-        [SerializeField] private List<GameObject> registeredPrefabs = new List<GameObject>();
 
         private void Awake()
         {
@@ -120,14 +128,18 @@ namespace Network.Factory
 
             networkObject.Initialize(createMsg.NetworkId, false, netObjectType);
         }
-    }
 
-    [Serializable]
-    public class NetworkObjectCreateMessage
-    {
-        public int NetworkId;
-        public NetObjectTypes PrefabType;
-        public Vector3 Position;
-        public Vector3 Rotation;
+        public void UpdateNetworkObjectPosition(int clientId, Vector3 pos)
+        {
+            if (_networkObjects.TryGetValue(clientId, out NetworkObject networkObject))
+            {
+                networkObject.LastUpdatedPos = pos;
+                networkObject.transform.position = pos;
+            }
+            else
+            {
+                Debug.LogWarning($"[NetworkObjectFactory] Network object with ID {clientId} not found.");
+            }
+        }
     }
 }

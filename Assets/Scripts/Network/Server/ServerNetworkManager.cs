@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using Network.ClientDir;
+using Network.Factory;
 using Network.interfaces;
 using Network.Messages;
 using UnityEngine;
@@ -16,7 +17,8 @@ namespace Network.Server
         private float _lastHeartbeatTime;
         private float _lastTimeoutCheck;
         public static Action<object, MessageType, int> OnSerializedBroadcast;
-        public static Action<int, object,MessageType, bool> OnSendToClient;
+        public static Action<int, object, MessageType, bool> OnSendToClient;
+
         protected override void Awake()
         {
             base.Awake();
@@ -159,6 +161,13 @@ namespace Network.Server
             {
                 CheckForTimeouts();
                 _lastTimeoutCheck = currentTime;
+            }
+
+            foreach (KeyValuePair<int, NetworkObject> valuePair in NetworkObjectFactory.Instance.GetAllNetworkObjects())
+            {
+                if (Mathf.Approximately(valuePair.Value.LastUpdatedPos.sqrMagnitude, valuePair.Value.transform.position.sqrMagnitude)) return;
+                valuePair.Value.LastUpdatedPos = valuePair.Value.transform.position;
+                SerializedBroadcast(valuePair.Value.LastUpdatedPos, MessageType.Position, valuePair.Key);
             }
         }
 

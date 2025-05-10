@@ -8,7 +8,7 @@ namespace Network.Messages
     {
         private static ulong _lastMsgID = 0;
         private readonly Vector3 _data;
-        private int id = 0;
+        public int id = 0;
         public NetVector3()
         {
             _data = new Vector3();
@@ -20,7 +20,7 @@ namespace Network.Messages
         
         public int GetId(byte[] message)
         {
-            return BitConverter.ToInt32(message, 12);
+            return BitConverter.ToInt32(message, 0);
         }
 
         public Vector3 Deserialize(byte[] message)

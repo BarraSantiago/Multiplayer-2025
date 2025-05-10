@@ -8,6 +8,7 @@ namespace Network.Factory
         public int NetworkId { get; private set; } = -1;
         public bool IsOwner { get; private set; } = false;
         public NetObjectTypes PrefabType { get; set; } = NetObjectTypes.None;
+        public Vector3 LastUpdatedPos { get; set; } = Vector3.zero;
         
         public virtual void Initialize(int networkId, bool isOwner, NetObjectTypes prefabType)
         {

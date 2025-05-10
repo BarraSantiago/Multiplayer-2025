@@ -202,7 +202,8 @@ namespace Network.Server
 
                 GameObject player = _playerManager.GetAllPlayers()[clientId];
                 Vector3 pos = player.transform.position;
-
+                NetworkObjectFactory.Instance.UpdateNetworkObjectPosition(clientId, pos);
+                
                 if (input.IsShooting)
                 {
                     NetworkObject bullet = NetworkObjectFactory.Instance.CreateNetworkObject(player.transform.position,
