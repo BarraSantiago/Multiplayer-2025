@@ -177,7 +177,7 @@ namespace Network.Server
 
             try
             {
-                SerializedBroadcast("Server shutting down", MessageType.Console);
+                SerializedBroadcast(null, MessageType.Disconnect);
                 Debug.Log("[ServerNetworkManager] Server shutdown notification sent");
 
                 _clientManager.OnClientConnected -= OnClientConnected;

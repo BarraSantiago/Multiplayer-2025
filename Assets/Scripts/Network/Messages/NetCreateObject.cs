@@ -24,6 +24,7 @@ namespace Network.Messages
             serializedData.AddRange(BitConverter.GetBytes(data.Rotation.x));
             serializedData.AddRange(BitConverter.GetBytes(data.Rotation.y));
             serializedData.AddRange(BitConverter.GetBytes(data.Rotation.z));
+            serializedData.AddRange(BitConverter.GetBytes(data.Color));
             
             return serializedData.ToArray();
         }
@@ -39,7 +40,8 @@ namespace Network.Messages
             serializedData.AddRange(BitConverter.GetBytes(newData.Rotation.x));
             serializedData.AddRange(BitConverter.GetBytes(newData.Rotation.y));
             serializedData.AddRange(BitConverter.GetBytes(newData.Rotation.z));
-            
+            serializedData.AddRange(BitConverter.GetBytes(newData.Color));
+
             return serializedData.ToArray();
         }
         
@@ -58,7 +60,8 @@ namespace Network.Messages
                     BitConverter.ToSingle(message, 20),
                     BitConverter.ToSingle(message, 24),
                     BitConverter.ToSingle(message, 28)
-                )
+                ),
+                Color = BitConverter.ToInt32(message, 32)
             };
 
             return newData;

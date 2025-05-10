@@ -31,6 +31,20 @@ namespace Network.Server
             _messageHandlers[MessageType.ObjectUpdate] = HandleObjectUpdate;
             _messageHandlers[MessageType.PlayerInput] = HandlePlayerInput;
             _messageHandlers[MessageType.Acknowledgment] = HandleAcknowledgment;
+            _messageHandlers[MessageType.Disconnect] = HandleDisconnect;
+        }
+
+        private void HandleDisconnect(byte[] arg1, IPEndPoint arg2)
+        {
+            if (!_clientManager.TryGetClientId(arg2, out int clientId))
+            {
+                Debug.LogWarning($"[ServerMessageDispatcher] Disconnect from unknown client {arg2}");
+                return;
+            }
+
+            _clientManager.RemoveClient(arg2);
+            NetworkObjectFactory.Instance.DestroyNetworkObject(clientId);
+            ServerNetworkManager.OnSerializedBroadcast.Invoke(clientId, MessageType.ObjectDestroy, clientId);
         }
 
         private void HandleAcknowledgment(byte[] arg1, IPEndPoint arg2)
@@ -48,7 +62,9 @@ namespace Network.Server
             {
                 Dictionary<int, NetworkObject> networkObjects = NetworkObjectFactory.Instance.GetAllNetworkObjects();
                 int clientId = _clientManager.AddClient(ip);
-                GameObject player = CreateNetworkObject(Vector3.zero, Vector3.zero, NetObjectTypes.Player).gameObject;
+                PlayerData pData = _netHandShake.Deserialize(data);
+                GameObject player = CreateNetworkObject(Vector3.zero, Vector3.zero, NetObjectTypes.Player, pData.Color).gameObject;
+                
                 _playerManager.CreatePlayer(clientId, player);
                 _clientManager.UpdateClientTimestamp(clientId);
 
@@ -99,7 +115,7 @@ namespace Network.Server
             try
             {
                 string message = _netString.Deserialize(data);
-                onConsoleMessageReceived?.Invoke(message);
+                OnConsoleMessageReceived?.Invoke(message);
 
                 if (string.IsNullOrEmpty(message)) return;
 
@@ -207,7 +223,7 @@ namespace Network.Server
                 if (input.IsShooting)
                 {
                     NetworkObject bullet = NetworkObjectFactory.Instance.CreateNetworkObject(player.transform.position,
-                        Vector3.zero, NetObjectTypes.Projectile);
+                        Vector3.zero, NetObjectTypes.Projectile, _playerManager.GetPlayerColor(clientId));
                     NetworkObjectCreateMessage createMsg = new NetworkObjectCreateMessage
                     {
                         NetworkId = bullet.NetworkId,
@@ -227,15 +243,16 @@ namespace Network.Server
             }
         }
 
-        private NetworkObject CreateNetworkObject(Vector3 position, Vector3 rotation, NetObjectTypes objectType)
+        private NetworkObject CreateNetworkObject(Vector3 position, Vector3 rotation, NetObjectTypes objectType, int color)
         {
-            NetworkObject networkObject = NetworkObjectFactory.Instance.CreateNetworkObject(position, rotation, objectType);
+            NetworkObject networkObject = NetworkObjectFactory.Instance.CreateNetworkObject(position, rotation, objectType, color);
             NetworkObjectCreateMessage createMsg = new NetworkObjectCreateMessage
             {
                 NetworkId = networkObject.NetworkId,
                 PrefabType = objectType,
                 Position = networkObject.transform.position,
-                Rotation = rotation
+                Rotation = rotation,
+                Color = color
             };
             ServerNetworkManager.OnSerializedBroadcast.Invoke(createMsg, MessageType.ObjectCreate, -1);
             

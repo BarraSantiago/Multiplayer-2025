@@ -9,6 +9,11 @@ using UnityEngine;
 
 namespace Network.ClientDir
 {
+    public struct PlayerData
+    {
+        public string Name;
+        public int Color;
+    }
     public class ClientNetworkManager : AbstractNetworkManager
     {
         [SerializeField] private TMP_Text heartbeatText;
@@ -16,7 +21,9 @@ namespace Network.ClientDir
         public IPAddress ServerIPAddress { get; private set; }
         private IPEndPoint _serverEndpoint;
 
-        public void StartClient(IPAddress ip, int port)
+        
+        
+        public void StartClient(IPAddress ip, int port, string pName, int color)
         {
             heartbeatText = GameObject.FindGameObjectsWithTag("Ping").FirstOrDefault()?.GetComponent<TMP_Text>();
             ServerIPAddress = ip;
@@ -25,16 +32,20 @@ namespace Network.ClientDir
             try
             {
                 _connection = new UdpConnection(ip, port, this);
-                _messageDispatcher = new ClientMessageDispatcher(_playerManager, _connection, _clientManager,this);
-
+                _messageDispatcher = new ClientMessageDispatcher(_playerManager, _connection, _clientManager);
+                ClientMessageDispatcher.OnSendToServer += SendToServer;
                 _serverEndpoint = new IPEndPoint(ip, port);
 
                 GameObject player = new GameObject();
                 player.AddComponent<Player>();
 
                 _clientManager.AddClient(_serverEndpoint);
-
-                SendToServer(null, MessageType.HandShake);
+                PlayerData playerData = new PlayerData
+                {
+                    Name = pName,
+                    Color = color
+                };
+                SendToServer(playerData, MessageType.HandShake);
                 Debug.Log($"[ClientNetworkManager] Client started, connected to {ip}:{port}");
             }
             catch (Exception e)
@@ -93,10 +104,13 @@ namespace Network.ClientDir
         public override void Dispose()
         {
             if (_disposed) return;
-
+            
             try
             {
                 SendToServer("Client disconnecting", MessageType.Console);
+                SendToServer(null, MessageType.Disconnect);
+                ClientMessageDispatcher.OnSendToServer -= SendToServer;
+                
                 Debug.Log("[ClientNetworkManager] Client disconnect notification sent");
             }
             catch (Exception e)

@@ -17,9 +17,10 @@ namespace Network.interfaces
         protected readonly NetString _netString = new NetString();
         protected readonly NetPlayerInput _netPlayerInput = new NetPlayerInput();
         protected readonly NetCreateObject _netCreateObject = new NetCreateObject();
+        protected readonly NetHandShake _netHandShake = new NetHandShake();
         protected float _currentLatency = 0;
         public float CurrentLatency => _currentLatency;
-        public static Action<string> onConsoleMessageReceived;
+        public static Action<string> OnConsoleMessageReceived;
         protected float _lastPing;
 
         public readonly MessageTracker MessageTracker = new MessageTracker();
@@ -30,7 +31,8 @@ namespace Network.interfaces
         protected PlayerManager _playerManager;
         protected ClientManager _clientManager;
 
-        protected BaseMessageDispatcher(PlayerManager playerManager, UdpConnection connection, ClientManager clientManager)
+        protected BaseMessageDispatcher(PlayerManager playerManager, UdpConnection connection,
+            ClientManager clientManager)
         {
             _playerManager = playerManager;
             _connection = connection;
@@ -156,28 +158,50 @@ namespace Network.interfaces
             switch (messageType)
             {
                 case MessageType.HandShake:
+                    if (data is PlayerData playerData)
+                    {
+                        return _netHandShake.Serialize(playerData);
+                    }
+
                     return null;
+
                 case MessageType.Console:
                     if (data is string str) return _netString.Serialize(str);
                     throw new ArgumentException("Data must be string for Console messages");
+
                 case MessageType.Position:
                     if (data is Vector3 vec3) return _netVector3.Serialize(vec3, id);
                     throw new ArgumentException("Data must be Vector3 for Position messages");
+
                 case MessageType.Ping:
                     return null;
+
                 case MessageType.Id:
                     if (data is int idValue) return BitConverter.GetBytes(idValue);
                     throw new ArgumentException("Data must be int for Id messages");
+
+                case MessageType.Disconnect:
+                    return null;
+
                 // TODO serialization
                 case MessageType.ObjectCreate:
-                    if(data is NetworkObjectCreateMessage createMessage)
+                    if (data is NetworkObjectCreateMessage createMessage)
                     {
                         return _netCreateObject.Serialize(createMessage);
                     }
+
                     throw new ArgumentException("Data must be NetworkObjectCreateMessage");
+
                 case MessageType.ObjectDestroy:
+                    if (data is int intData)
+                    {
+                        return BitConverter.GetBytes(intData);
+                    }
+                    return null;
+                
                 case MessageType.ObjectUpdate:
                     return null;
+
                 case MessageType.Acknowledgment:
                     if (data is int ackedNumber)
                     {
@@ -187,11 +211,13 @@ namespace Network.interfaces
                     }
 
                     throw new ArgumentException("Data must be int for Acknowledgment messages");
+
                 case MessageType.PlayerInput:
                     if (data is PlayerInput input)
                     {
                         return _netPlayerInput.Serialize(input);
                     }
+
                     throw new ArgumentException("Data must be PlayerInput for PlayerInput messages");
                 default:
                     throw new ArgumentOutOfRangeException(nameof(messageType));
@@ -206,7 +232,8 @@ namespace Network.interfaces
 
             _lastResendCheckTime = currentTime;
 
-            Dictionary<IPEndPoint, List<MessageTracker.PendingMessage>> pendingMessages = MessageTracker.GetPendingMessages();
+            Dictionary<IPEndPoint, List<MessageTracker.PendingMessage>> pendingMessages =
+                MessageTracker.GetPendingMessages();
             foreach (KeyValuePair<IPEndPoint, List<MessageTracker.PendingMessage>> endpointMessages in pendingMessages)
             {
                 IPEndPoint target = endpointMessages.Key;
@@ -216,7 +243,8 @@ namespace Network.interfaces
                     {
                         AbstractNetworkManager.Instance.SendMessage(message.Data, target);
                         MessageTracker.UpdateMessageSentTime(target, message.MessageType, message.MessageNumber);
-                        Debug.Log($"[MessageDispatcher] Resending message: Type={message.MessageType}, Number={message.MessageNumber} to {target}");
+                        Debug.Log(
+                            $"[MessageDispatcher] Resending message: Type={message.MessageType}, Number={message.MessageNumber} to {target}");
                     }
                 }
             }

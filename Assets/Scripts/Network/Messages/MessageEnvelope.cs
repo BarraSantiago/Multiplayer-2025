@@ -128,14 +128,11 @@ namespace Network.Messages
                 }
             }
 
-            // Fold down to 32 bits
             uChecksum1 = (uChecksum1 & 0xFFFF) + (uChecksum1 >> 16);
             uChecksum1 = (uChecksum1 & 0xFFFF) + (uChecksum1 >> 16);
 
-            // Combine the two checksums for the second value
             uChecksum2 += uChecksum1;
 
-            // Convert back to int
             checksum1 = (int)uChecksum1;
             checksum2 = (int)uChecksum2;
         }

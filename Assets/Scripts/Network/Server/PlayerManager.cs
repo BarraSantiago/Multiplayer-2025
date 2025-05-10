@@ -10,7 +10,8 @@ namespace Network
         private readonly GameObject _playerPrefab;
         private readonly ConcurrentDictionary<int, GameObject> _players = new ConcurrentDictionary<int, GameObject>();
         private readonly ConcurrentDictionary<int, Controller> _playerControllers = new ConcurrentDictionary<int, Controller>();
-
+        private readonly ConcurrentDictionary<int, int> _playerColor = new ConcurrentDictionary<int, int>();
+        
         public PlayerManager(GameObject playerPrefab)
         {
             _playerPrefab = playerPrefab;
@@ -85,6 +86,19 @@ namespace Network
             if (controller)
             {
                 controller.UpdateInput(input);
+            }
+        }
+
+        public int GetPlayerColor(int clientId)
+        {
+            if (_playerColor.TryGetValue(clientId, out int color))
+            {
+                return color;
+            }
+            else
+            {
+                Debug.LogWarning($"[PlayerManager] Player with id {clientId} not found");
+                return 1;
             }
         }
     }

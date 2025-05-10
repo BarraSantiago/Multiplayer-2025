@@ -19,7 +19,7 @@ namespace UI
 
             this.gameObject.SetActive(false);
 
-            BaseMessageDispatcher.onConsoleMessageReceived += OnReceiveMessage;
+            BaseMessageDispatcher.OnConsoleMessageReceived += OnReceiveMessage;
             _clientNetworkManager ??= FindAnyObjectByType<ClientNetworkManager>();
         }
 

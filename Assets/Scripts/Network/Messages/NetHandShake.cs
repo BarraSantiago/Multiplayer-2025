@@ -1,18 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
+using Network.ClientDir;
 
 namespace Network.Messages
 {
-    public class NetHandShake : IMessage<(long, int)>
+    public class NetHandShake : IMessage<PlayerData>
     {
-        private (long, int) _data;
+        private PlayerData _data;
 
-        public (long, int) Deserialize(byte[] message)
+        public PlayerData Deserialize(byte[] message)
         {
-            (long, int) outData;
+            PlayerData outData;
 
-            outData.Item1 = BitConverter.ToInt64(message, 0);
-            outData.Item2 = BitConverter.ToInt32(message, 8);
+            int offset = 0;
+            outData.Color = BitConverter.ToInt32(message, offset);
+            offset += 4;
+            int stringLength = BitConverter.ToInt32(message, offset);
+            offset += 4;
+
+            outData.Name = Encoding.UTF8.GetString(message, offset, stringLength);
 
             return outData;
         }
@@ -22,12 +29,27 @@ namespace Network.Messages
             return MessageType.HandShake;
         }
 
+        // TODO Cliente: color, nombre Servidor: Seed, Players
         public byte[] Serialize()
         {
             List<byte> outData = new List<byte>();
 
-            outData.AddRange(BitConverter.GetBytes(_data.Item1));
-            outData.AddRange(BitConverter.GetBytes(_data.Item2));
+            outData.AddRange(BitConverter.GetBytes(_data.Color));
+            byte[] stringBytes = Encoding.UTF8.GetBytes(_data.Name);
+            outData.AddRange(BitConverter.GetBytes(stringBytes.Length));
+            outData.AddRange(stringBytes);
+
+            return outData.ToArray();
+        }
+        
+        public byte[] Serialize(PlayerData playerData)
+        {
+            List<byte> outData = new List<byte>();
+
+            outData.AddRange(BitConverter.GetBytes(playerData.Color));
+            byte[] stringBytes = Encoding.UTF8.GetBytes(playerData.Name);
+            outData.AddRange(BitConverter.GetBytes(stringBytes.Length));
+            outData.AddRange(stringBytes);
 
             return outData.ToArray();
         }

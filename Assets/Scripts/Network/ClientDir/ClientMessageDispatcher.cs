@@ -10,13 +10,12 @@ namespace Network.ClientDir
 {
     public class ClientMessageDispatcher : BaseMessageDispatcher
     {
-        private readonly ClientNetworkManager _clientNetworkManager;
+        public static Action<object, MessageType, bool> OnSendToServer;
 
         public ClientMessageDispatcher(PlayerManager playerManager, UdpConnection connection,
-            ClientManager clientManager, ClientNetworkManager clientNetworkManager)
+            ClientManager clientManager)
             : base(playerManager, connection, clientManager)
         {
-            _clientNetworkManager = clientNetworkManager;
         }
 
         protected override void InitializeMessageHandlers()
@@ -58,7 +57,7 @@ namespace Network.ClientDir
             try
             {
                 string message = _netString.Deserialize(data);
-                onConsoleMessageReceived?.Invoke(message);
+                OnConsoleMessageReceived?.Invoke(message);
                 Debug.Log($"[ClientMessageDispatcher] Console message received: {message}");
             }
             catch (Exception ex)
@@ -96,7 +95,7 @@ namespace Network.ClientDir
                 _currentLatency = (Time.realtimeSinceStartup - _lastPing) * 1000;
                 _lastPing = Time.realtimeSinceStartup;
 
-                _clientNetworkManager.SendToServer(null, MessageType.Ping);
+                OnSendToServer?.Invoke(null, MessageType.Ping, false);
             }
             catch (Exception ex)
             {

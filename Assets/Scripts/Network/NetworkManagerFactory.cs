@@ -2,6 +2,7 @@
 using System.Net;
 using Network.ClientDir;
 using Network.Server;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,8 @@ namespace Network
         [SerializeField] private ServerNetworkManager serverManagerPrefab;
         [SerializeField] private ClientNetworkManager clientManagerPrefab;
         [SerializeField] private Button DisconnectButton;
+        [SerializeField] private TMP_Dropdown ColorSelector;
+        [SerializeField] private InputField PlayerNameInput;
 
         public ServerNetworkManager CreateServerManager(int port)
         {
@@ -21,7 +24,6 @@ namespace Network
             {
                 manager.Dispose();
                 Application.Quit();
-                
             });
             return manager;
         }
@@ -29,12 +31,13 @@ namespace Network
         public ClientNetworkManager CreateClientManager(IPAddress ip, int port)
         {
             ClientNetworkManager manager = Instantiate(clientManagerPrefab);
-            manager.StartClient(ip, port);
+
+            manager.StartClient(ip, port, PlayerNameInput.text, ColorSelector.value);
+
             DisconnectButton.onClick.AddListener(() =>
             {
                 manager.Dispose();
                 Application.Quit();
-                
             });
             return manager;
         }

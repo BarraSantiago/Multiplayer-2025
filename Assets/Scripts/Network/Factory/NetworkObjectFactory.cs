@@ -22,6 +22,7 @@ namespace Network.Factory
         public NetObjectTypes PrefabType;
         public Vector3 Position;
         public Vector3 Rotation;
+        public int Color;
     }
 
     public class NetworkObjectFactory : MonoBehaviourSingleton<NetworkObjectFactory>
@@ -55,7 +56,7 @@ namespace Network.Factory
             _prefabs[netObjType] = prefab;
         }
 
-        public NetworkObject CreateNetworkObject(Vector3 position, Vector3 rotation, NetObjectTypes netObj,
+        public NetworkObject CreateNetworkObject(Vector3 position, Vector3 rotation, NetObjectTypes netObj, int color,
             bool isOwner = false)
         {
             if (!_prefabs.TryGetValue(netObj, out GameObject prefab)) return null;
@@ -63,6 +64,15 @@ namespace Network.Factory
             int netId = GetNextNetworkId();
             Quaternion rot = Quaternion.Euler(rotation);
             GameObject instance = Instantiate(prefab, position, rot);
+            
+            instance.GetComponent<MeshRenderer>().material.color = color switch
+            {
+                0 => Color.red,
+                1 => Color.blue,
+                2 => Color.green,
+                _ => Color.red
+            };
+            
             NetworkObject networkObject = instance.GetComponent<NetworkObject>();
             networkObject.Initialize(netId, isOwner, netObj);
 
@@ -124,6 +134,13 @@ namespace Network.Factory
             }
 
             GameObject instance = Instantiate(prefab, createMsg.Position, Quaternion.Euler(createMsg.Rotation));
+            instance.GetComponent<MeshRenderer>().material.color = createMsg.Color switch
+            {
+                0 => Color.red,
+                1 => Color.blue,
+                2 => Color.green,
+                _ => Color.red
+            };
             NetworkObject networkObject = instance.GetComponent<NetworkObject>();
 
             networkObject.Initialize(createMsg.NetworkId, false, netObjectType);
