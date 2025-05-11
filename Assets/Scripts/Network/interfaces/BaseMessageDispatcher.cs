@@ -18,6 +18,7 @@ namespace Network.interfaces
         protected readonly NetPlayerInput _netPlayerInput = new NetPlayerInput();
         protected readonly NetCreateObject _netCreateObject = new NetCreateObject();
         protected readonly NetHandShake _netHandShake = new NetHandShake();
+        protected readonly NetPingBroadcast _netPingBroadcast = new NetPingBroadcast();
         protected float _currentLatency = 0;
         public float CurrentLatency => _currentLatency;
         public static Action<string> OnConsoleMessageReceived;
@@ -175,6 +176,9 @@ namespace Network.interfaces
 
                 case MessageType.Ping:
                     return null;
+                case MessageType.PingBroadcast:
+                    if (data is (int, float)[] pings) return _netPingBroadcast.Serialize(pings);
+                    throw new ArgumentException("Data must be (int, float)[] for PingBroadcast messages");
 
                 case MessageType.Id:
                     if (data is int idValue) return BitConverter.GetBytes(idValue);

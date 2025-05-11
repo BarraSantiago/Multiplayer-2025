@@ -104,7 +104,7 @@ namespace Network.Messages
         private void CalculateChecksums(out int checksum1, out int checksum2)
         {
             uint uChecksum1 = 0;
-            uint uChecksum2 = 0x12345678; // Starting seed
+            uint uChecksum2 = 0x12345678;
 
             byte[] headerData = new byte[10];
             headerData[0] = (byte)(IsCritical ? 1 : 0);
@@ -112,7 +112,6 @@ namespace Network.Messages
             Array.Copy(BitConverter.GetBytes(MessageNumber), 0, headerData, 5, 4);
             headerData[9] = (byte)(IsImportant ? 1 : 0);
 
-            // Standard additive checksum with carry
             for (int i = 0; i < headerData.Length; i++)
             {
                 uChecksum1 += headerData[i];

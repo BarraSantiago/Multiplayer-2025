@@ -55,11 +55,9 @@ namespace Network.ClientDir
 
         public void UpdateClientTimestamp(int clientId)
         {
-            if (_clients.TryGetValue(clientId, out Client client))
-            {
-                client.lastHeartbeatTime = Time.realtimeSinceStartup;
-                _clients[clientId] = client;
-            }
+            if (!_clients.TryGetValue(clientId, out Client client)) return;
+            client.LastHeartbeatTime = Time.realtimeSinceStartup;
+            _clients[clientId] = client;
         }
 
         public List<IPEndPoint> GetTimedOutClients(float timeout)
@@ -69,11 +67,10 @@ namespace Network.ClientDir
 
             foreach (KeyValuePair<int, Client> client in _clients)
             {
-                if (currentTime - client.Value.lastHeartbeatTime > timeout)
-                {
-                    timedOut.Add(client.Value.ipEndPoint);
-                    Debug.Log($"[ClientManager] Client {client.Key} timed out");
-                }
+                if (currentTime - client.Value.LastHeartbeatTime <= timeout) continue;
+
+                timedOut.Add(client.Value.ipEndPoint);
+                Debug.Log($"[ClientManager] Client {client.Key} timed out");
             }
 
             return timedOut;

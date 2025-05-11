@@ -29,6 +29,30 @@ namespace Network.ClientDir
             _messageHandlers[MessageType.ObjectDestroy] = HandleObjectDestroy;
             _messageHandlers[MessageType.ObjectUpdate] = HandleObjectUpdate;
             _messageHandlers[MessageType.Acknowledgment] = HandleAcknowledgment;
+            _messageHandlers[MessageType.PingBroadcast] = HandlePingBroadcast;
+        }
+
+        private void HandlePingBroadcast(byte[] arg1, IPEndPoint arg2)
+        {
+            try
+            {
+                if (arg1 == null || arg1.Length < 4)
+                {
+                    Debug.LogError("[ClientMessageDispatcher] Invalid ping broadcast data");
+                    return;
+                }
+                
+                (int,float)[] pingData = _netPingBroadcast.Deserialize(arg1);
+                foreach ((int, float) data in pingData)
+                {
+                    int clientId = data.Item1;
+                    float ping = data.Item2;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[ClientMessageDispatcher] Error in HandlePingBroadcast: {ex.Message}");
+            }
         }
 
         private void HandleAcknowledgment(byte[] arg1, IPEndPoint arg2)
@@ -79,7 +103,6 @@ namespace Network.ClientDir
                 Vector3 position = _netVector3.Deserialize(data);
                 int objectId = _netVector3.GetId(data);
                 
-                //_playerManager.UpdatePlayerPosition(objectId, position);
                 NetworkObjectFactory.Instance.GetAllNetworkObjects()[objectId].transform.position = position;
             }
             catch (Exception ex)

@@ -13,7 +13,8 @@ namespace Network.Messages
         ObjectCreate,
         ObjectDestroy,
         ObjectUpdate,
-        Disconnect
+        Disconnect,
+        PingBroadcast,
     }
 
     public interface IMessage<T>

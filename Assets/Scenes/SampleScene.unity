@@ -696,7 +696,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 12345
+  m_Text: 
 --- !u!1 &294039873
 GameObject:
   m_ObjectHideFlags: 0
@@ -1419,6 +1419,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 439386032}
   m_CullTransparentMesh: 1
+--- !u!1 &446107662
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 446107663}
+  - component: {fileID: 446107664}
+  m_Layer: 0
+  m_Name: GroundCollider
+  m_TagString: Ground
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &446107663
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 446107662}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1669393037}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &446107664
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 446107662}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1.2346869, z: 1}
+  m_Center: {x: 0, y: 0.117343426, z: 0}
 --- !u!1 &464690875
 GameObject:
   m_ObjectHideFlags: 0
@@ -1645,7 +1698,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 650716435}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
@@ -1671,7 +1724,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Enter port...
+  m_Text: Enter name...
 --- !u!222 &650716437
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2575,7 +2628,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: 12345
+  m_Text: 
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -2813,12 +2866,12 @@ MonoBehaviour:
     - m_Text: Red
       m_Image: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
       m_Color: {r: 1, g: 0, b: 0, a: 1}
-    - m_Text: Green
-      m_Image: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-      m_Color: {r: 0.078704715, g: 1, b: 0, a: 1}
     - m_Text: Blue
       m_Image: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
       m_Color: {r: 0, g: 0.003575325, b: 1, a: 1}
+    - m_Text: Green
+      m_Image: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+      m_Color: {r: 0.078704715, g: 1, b: 0, a: 1}
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -3636,7 +3689,8 @@ Transform:
   m_LocalPosition: {x: 0.01, y: -3.31, z: 0}
   m_LocalScale: {x: 15.458781, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 446107663}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1774592201

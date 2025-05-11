@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Network.ClientDir;
 using Network.Factory;
@@ -13,7 +14,9 @@ namespace Network.Server
     {
         public int TimeOut = 30;
         public float HeartbeatInterval = 0.15f;
-
+        public float PingBroadcastInterval = 0.50f;
+        private float _lastPingBroadcastTime;
+        
         private float _lastHeartbeatTime;
         private float _lastTimeoutCheck;
         public static Action<object, MessageType, int> OnSerializedBroadcast;
@@ -127,9 +130,7 @@ namespace Network.Server
         {
             foreach (KeyValuePair<int, Client> client in _clientManager.GetAllClients())
             {
-                byte[] heartbeatData = SerializeMessage(null, MessageType.Ping);
-                heartbeatData = _messageDispatcher.ConvertToEnvelope(heartbeatData, MessageType.Ping, null, false);
-                _messageDispatcher.SendMessage(heartbeatData, MessageType.Ping, client.Value.ipEndPoint, false);
+                _messageDispatcher.SendMessage(null, MessageType.Ping, client.Value.ipEndPoint, false);
             }
         }
 
@@ -168,6 +169,36 @@ namespace Network.Server
                 if (Mathf.Approximately(valuePair.Value.LastUpdatedPos.sqrMagnitude, valuePair.Value.transform.position.sqrMagnitude)) return;
                 valuePair.Value.LastUpdatedPos = valuePair.Value.transform.position;
                 SerializedBroadcast(valuePair.Value.LastUpdatedPos, MessageType.Position, valuePair.Key);
+            }
+            
+            if (currentTime - _lastPingBroadcastTime > PingBroadcastInterval)
+            {
+                BroadcastPlayerPings();
+                _lastPingBroadcastTime = currentTime;
+            }
+        }
+        
+        private void BroadcastPlayerPings()
+        {
+            try
+            {
+                Dictionary<int, float> playerPings = new Dictionary<int, float>();
+            
+                foreach (KeyValuePair<int, Client> clientPair in _clientManager.GetAllClients())
+                {
+                    int clientId = clientPair.Key;
+                    float clientPing = clientPair.Value.LastHeartbeatTime;
+                    playerPings.Add(clientId, clientPing);
+                }
+
+                if (playerPings.Count <= 0) return;
+                SerializedBroadcast(playerPings.ToArray(), MessageType.PingBroadcast);
+                
+                Debug.Log($"[ServerNetworkManager] Broadcasting ping data for {playerPings.Count} players");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[ServerNetworkManager] Ping broadcast failed: {e.Message}");
             }
         }
 
