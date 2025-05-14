@@ -1,51 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using MultiplayerLib.Network.Factory;
 using UnityEngine;
 
 namespace Network.Factory
 {
-    public class FactoryConnection : MonoBehaviour
+    public class FactoryConnection : NetworkObjectFactory
     {
-        [SerializeField] private List<GameObject> registeredPrefabs = new();
-        private readonly Dictionary<NetObjectTypes, GameObject> _prefabs = new();
 
-        private void Awake()
+        private ObjectCreator _objectCreator;
+        public FactoryConnection( ObjectCreator objectCreator)
         {
-            NetObjectTypes[] netObjTypes = (NetObjectTypes[])Enum.GetValues(typeof(NetObjectTypes));
-            for (int i = 0; i < registeredPrefabs.Count; i++)
+            _objectCreator = objectCreator;
+        }
+
+        public override void CreateGameObject(NetworkObjectCreateMessage createMsg)
+        {
+            _objectCreator.CreateObject(createMsg);
+        }
+
+        public override void UpdateObjectPosition(int id, System.Numerics.Vector3 position)
+        {
+            if (_networkObjects.TryGetValue(id, out NetworkObject networkObject))
             {
-                GameObject prefab = registeredPrefabs[i];
-                NetworkObject netObj = prefab.GetComponent<NetworkObject>();
-                if (netObj != null) RegisterPrefab(prefab, netObjTypes[i + 1]);
+                networkObject.UpdatePosition(position);
+                OnPositionUpdate?.Invoke(id, position);
+            }
+            else
+            {
+                Debug.LogError($"[FactoryConnection] No object found with ID: {id}");
             }
         }
-
-        public void RegisterPrefab(GameObject prefab, NetObjectTypes netObjType)
-        {
-            if (_prefabs.ContainsKey(netObjType)) return;
-
-            NetworkObject netObj = prefab.GetComponent<NetworkObject>();
-            if (netObj == null) return;
-
-            _prefabs[netObjType] = prefab;
-        }
-
-        public void CreateNetObject(NetworkObjectCreateMessage message)
-        {
-            if (!_prefabs.TryGetValue(message.PrefabType, out GameObject prefab)) return;
-
-            Transform transf = new RectTransform();
-            transf.position = message.Position;
-            transf.localScale = Vector3.one;
-            GameObject instance = Instantiate(prefab, transf);
-
-            instance.GetComponent<MeshRenderer>().material.color = message.Color switch
-            {
-                0 => Color.red,
-                1 => Color.blue,
-                2 => Color.green,
-                _ => Color.red
-            };
-        }
     }
+    
 }

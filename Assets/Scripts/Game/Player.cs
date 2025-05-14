@@ -1,31 +1,19 @@
 ﻿using System;
-using Network.ClientDir;
-using Network.Messages;
+using MultiplayerLib.Game;
+using MultiplayerLib.Network.ClientDir;
+using MultiplayerLib.Network.Messages;
 using UnityEngine;
+using Vector2 = System.Numerics.Vector2;
 
 namespace Game
 {
-    [Serializable]
-    public struct PlayerInput
-    {
-        public Vector2 MoveDirection;
-        public bool IsShooting;
-        public bool IsJumping;
-        public bool IsCrouching;
-        public float Timestamp;
-    }
     public class Player : MonoBehaviour
     {
-        private ClientNetworkManager _clientNetworkManager;
         private float _inputSendInterval = 0.05f;
         private float _timeSinceLastSend = 0f;
 
         private PlayerInput _lastSentInput;
 
-        private void Awake()
-        {
-            _clientNetworkManager ??= FindAnyObjectByType<ClientNetworkManager>();
-        }
 
         private void Update()
         {
@@ -38,15 +26,13 @@ namespace Game
 
         private void SendInput()
         {
-            // Movement input
-            Vector2 moveDirection = Vector2.zero;
-            //if (Input.GetKey(KeyCode.W)) moveDirection.y += 1;
-            //if (Input.GetKey(KeyCode.S)) moveDirection.y -= 1;
-            if (Input.GetKey(KeyCode.A)) moveDirection.x -= 1;
-            if (Input.GetKey(KeyCode.D)) moveDirection.x += 1;
+            Vector2 moveDirection = Vector2.Zero;
+            if (Input.GetKey(KeyCode.A)) moveDirection.X -= 1;
+            if (Input.GetKey(KeyCode.D)) moveDirection.X += 1;
 
-            if (moveDirection.sqrMagnitude > 1f)
-                moveDirection.Normalize();
+            if (moveDirection.LengthSquared() > 1f)
+                moveDirection = Vector2.Normalize(moveDirection);
+            
                 
             bool isShooting = Input.GetKey(KeyCode.Mouse0);
             bool isJumping = Input.GetKey(KeyCode.Space);
@@ -61,12 +47,12 @@ namespace Game
                 Timestamp = Time.realtimeSinceStartup
             };
             
-            bool hasMovement = !Mathf.Approximately(moveDirection.sqrMagnitude, 0f);
+            bool hasMovement = !Mathf.Approximately(moveDirection.LengthSquared(), 0f);
             bool hasAction = isShooting || isJumping || isCrouching;
             bool inputChanged = !InputEquals(_lastSentInput, inputData);
 
             if (!hasMovement && !hasAction && !inputChanged) return;
-            _clientNetworkManager.SendToServer(inputData, MessageType.PlayerInput);
+            ClientNetworkManager.OnSendToServer?.Invoke(inputData, MessageType.PlayerInput, false);
             _lastSentInput = inputData;
         }
         

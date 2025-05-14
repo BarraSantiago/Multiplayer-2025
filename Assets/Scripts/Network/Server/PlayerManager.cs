@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Game;
+using MultiplayerLib.Game;
 using UnityEngine;
 
 namespace Network

@@ -1,6 +1,4 @@
-﻿using Network.interfaces;
-using Network.Messages;
-using Network.Server;
+﻿using MultiplayerLib.Game;
 using UnityEngine;
 
 namespace Game
@@ -21,9 +19,11 @@ namespace Game
             _rigidbody.useGravity = true;
         }
 
-        private void HandleMovement(Vector2 moveDirection)
+        private void HandleMovement(System.Numerics.Vector2 moveDirection)
         {
-            Vector2 moveVelocity = moveDirection * Speed;
+            moveDirection.X *= Speed;
+            moveDirection.Y *= Speed;
+            Vector2 moveVelocity = new Vector2(){x = moveDirection.X, y = moveDirection.Y};
             _rigidbody.linearVelocity = moveVelocity;
         }
 
@@ -55,6 +55,7 @@ namespace Game
             else
             {
                 gameObject.transform.localScale = new Vector3(1, 1f, 1);
+                
                 HandleMovement(input.MoveDirection);
                 HandleJump(input.IsJumping);
                 LastUpdatedPos = transform.position;
