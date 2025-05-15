@@ -1,10 +1,8 @@
-﻿using Network;
-using Network.ClientDir;
-using Network.interfaces;
-using Network.Messages;
+﻿using MultiplayerLib.Network.ClientDir;
+using MultiplayerLib.Network.interfaces;
+using MultiplayerLib.Network.Messages;
 using UnityEngine;
 using UnityEngine.UI;
-using Utils;
 
 namespace UI
 {
@@ -12,7 +10,6 @@ namespace UI
     {
         public Text messages;
         public InputField inputMessage;
-        private ClientNetworkManager _clientNetworkManager;
         protected void Awake()
         {
             inputMessage.onEndEdit.AddListener(OnEndEdit);
@@ -20,7 +17,6 @@ namespace UI
             this.gameObject.SetActive(false);
 
             BaseMessageDispatcher.OnConsoleMessageReceived += OnReceiveMessage;
-            _clientNetworkManager ??= FindAnyObjectByType<ClientNetworkManager>();
         }
 
         private void OnReceiveMessage(string message)
@@ -32,8 +28,7 @@ namespace UI
         {
             if (inputMessage.text == "") return;
             
-            _clientNetworkManager?.SendToServer(inputMessage.text, MessageType.Console);
-
+            ClientNetworkManager.OnSendToServer?.Invoke(inputMessage.text, MessageType.Console, false);
             inputMessage.ActivateInputField();
             inputMessage.Select();
             inputMessage.text = "";

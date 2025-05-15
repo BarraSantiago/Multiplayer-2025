@@ -1,5 +1,4 @@
-﻿using System;
-using MultiplayerLib.Game;
+﻿using MultiplayerLib.Game;
 using MultiplayerLib.Network.ClientDir;
 using MultiplayerLib.Network.Messages;
 using UnityEngine;
@@ -44,7 +43,6 @@ namespace Game
                 IsShooting = isShooting,
                 IsJumping = isJumping,
                 IsCrouching = isCrouching,
-                Timestamp = Time.realtimeSinceStartup
             };
             
             bool hasMovement = !Mathf.Approximately(moveDirection.LengthSquared(), 0f);

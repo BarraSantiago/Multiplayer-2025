@@ -8,15 +8,20 @@ namespace Game
         public float Speed = 5f;
         public float JumpForce = 5f;
         public bool IsGrounded = false;
-        public Vector3 LastUpdatedPos;
 
         private Rigidbody _rigidbody;
+        private PlayerInput _input;
 
         private void Start()
         {
             _rigidbody = gameObject.AddComponent<Rigidbody>();
             _rigidbody.constraints = (RigidbodyConstraints)80;
             _rigidbody.useGravity = true;
+        }
+
+        private void Update()
+        {
+            ExecuteInput();
         }
 
         private void HandleMovement(System.Numerics.Vector2 moveDirection)
@@ -34,9 +39,9 @@ namespace Game
             IsGrounded = false;
         }
 
-        private void OnCollisionEnter2D(Collision2D collision)
+        private void OnTriggerEnter(Collider other)
         {
-            if (collision.gameObject.CompareTag("Ground"))
+            if (other.gameObject.CompareTag("Ground"))
             {
                 IsGrounded = true;
             }
@@ -44,11 +49,16 @@ namespace Game
 
         public void UpdateInput(PlayerInput input)
         {
-            if (input.IsShooting)
+            _input = input;
+        }
+
+        private void ExecuteInput()
+        {
+            if (_input.IsShooting)
             {
             }
 
-            if (input.IsCrouching)
+            if (_input.IsCrouching)
             {
                 gameObject.transform.localScale = new Vector3(1, 0.5f, 1);
             }
@@ -56,9 +66,8 @@ namespace Game
             {
                 gameObject.transform.localScale = new Vector3(1, 1f, 1);
                 
-                HandleMovement(input.MoveDirection);
-                HandleJump(input.IsJumping);
-                LastUpdatedPos = transform.position;
+                HandleMovement(_input.MoveDirection);
+                HandleJump(_input.IsJumping);
             }
         }
     }

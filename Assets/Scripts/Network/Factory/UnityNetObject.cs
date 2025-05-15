@@ -1,34 +1,26 @@
-﻿using System;
-using MultiplayerLib.Network.Factory;
+﻿using MultiplayerLib.Network.Factory;
 using UnityEngine;
 
 namespace Network.Factory
 {
     public class UnityNetObject : MonoBehaviour
     {
-        public NetworkObject NetworkObject { get; private set; }
+        public NetworkObject NetworkObject { get; set; }
         private readonly float _positionThreshold = 0.001f;
-
-        private void Awake()
-        {
-            NetworkObject = new NetworkObject();
-        }
 
         private void Update()
         {
-            if (!IsPositionApproximatelyEqual(NetworkObject.LastUpdatedPos, transform.position, _positionThreshold))
-            {
-                
-            }
+            NetworkObject.CurrentPos = ConvertToSystemVector3(transform.position);
         }
-        
-        private bool IsPositionApproximatelyEqual(System.Numerics.Vector3 sysVec, UnityEngine.Vector3 unityVec, float threshold)
+
+        private System.Numerics.Vector3 ConvertToSystemVector3(Vector3 unityVec)
         {
-            float dx = sysVec.X - unityVec.x;
-            float dy = sysVec.Y - unityVec.y;
-            float dz = sysVec.Z - unityVec.z;
-            
-            return (dx * dx + dy * dy + dz * dz) < (threshold * threshold);
+            return new System.Numerics.Vector3(unityVec.x, unityVec.y, unityVec.z);
+        }
+
+        private Vector3 ConvertToUnityVector3(System.Numerics.Vector3 sysVec)
+        {
+            return new Vector3(sysVec.X, sysVec.Y, sysVec.Z);
         }
     }
 }

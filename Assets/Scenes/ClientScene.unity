@@ -478,16 +478,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 180350408}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7dffb23e648049d0974bf5950dade6b7, type: 3}
+  m_Script: {fileID: 11500000, guid: adb071f4ada04458a2b29111068a0077, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverManagerPrefab: {fileID: 2097278776426823016, guid: 637897696e8af234bb51e4312437567c,
-    type: 3}
-  clientManagerPrefab: {fileID: 736312552749154507, guid: 0bf39c1f89d6bb44d8785eca65b314f9,
-    type: 3}
-  DisconnectButton: {fileID: 1108887347}
-  ColorSelector: {fileID: 1338572490}
-  PlayerNameInput: {fileID: 1174300671}
+  registeredPrefabs:
+  - {fileID: 256864484462788253, guid: f2ff0abf5115678499af0cd367990497, type: 3}
+  - {fileID: 5244531302253822717, guid: 87e1900007bf7764a80701707b2d1111, type: 3}
 --- !u!114 &180350412
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -497,12 +493,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 180350408}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ea9ea6c7388416799916cb02f61783b, type: 3}
+  m_Script: {fileID: 11500000, guid: 4b199f579800466c97e422bcfd1ad0e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  registeredPrefabs:
-  - {fileID: 256864484462788253, guid: f2ff0abf5115678499af0cd367990497, type: 3}
-  - {fileID: 5244531302253822717, guid: 87e1900007bf7764a80701707b2d1111, type: 3}
+  serverIp: 127.0.0.1
+  serverPort: 12346
+  playerName: Player
+  playerColor: 0
 --- !u!1 &194703369
 GameObject:
   m_ObjectHideFlags: 0
@@ -792,8 +789,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chatScreen: {fileID: 1130635388}
+  ColorSelector: {fileID: 1338572490}
+  PlayerNameInput: {fileID: 1174300671}
   connectBtn: {fileID: 396509903}
-  startServerBtn: {fileID: 306608487}
+  disconnectBtn: {fileID: 1108887347}
   portInputField: {fileID: 1558557928}
   addressInputField: {fileID: 2123302590}
 --- !u!1 &304126657

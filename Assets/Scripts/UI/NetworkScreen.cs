@@ -1,25 +1,27 @@
 ﻿using System.Net;
-using Network;
+using Game;
+using MultiplayerLib.Network.ClientDir;
+using Network.ClientDir;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Utils;
 
 namespace UI
 {
     public class NetworkScreen : MonoBehaviour
     {
         [SerializeField] GameObject chatScreen;
+        [SerializeField] private TMP_Dropdown ColorSelector;
+        [SerializeField] private InputField PlayerNameInput;
         public Button connectBtn;
-        public Button startServerBtn;
+        public Button disconnectBtn;
         public InputField portInputField;
         public InputField addressInputField;
-        private NetworkManagerFactory _networkManagerFactory;
-
+        private UnityClientManager clientManager;
         protected void Awake()
         {
             connectBtn.onClick.AddListener(OnConnectBtnClick);
-            startServerBtn.onClick.AddListener(OnStartServerBtnClick);
-            _networkManagerFactory = FindAnyObjectByType<NetworkManagerFactory>();
+            clientManager = FindFirstObjectByType<UnityClientManager>();
         }
 
         private void OnConnectBtnClick()
@@ -27,16 +29,26 @@ namespace UI
             IPAddress ipAddress = IPAddress.Parse(addressInputField.text);
             int port = System.Convert.ToInt32(portInputField.text);
 
-            _networkManagerFactory.CreateClientManager(ipAddress, port);
+            CreateClientManager(ipAddress, port);
 
             SwitchToChatScreen();
         }
 
-        private void OnStartServerBtnClick()
+        private void CreateClientManager(IPAddress ipAddress, int port)
         {
-            int port = System.Convert.ToInt32(portInputField.text);
-            _networkManagerFactory.CreateServerManager(port);
-            SwitchToChatScreen();
+            disconnectBtn.onClick.AddListener(clientManager._networkManager.Dispose);
+            
+            GameObject player = new GameObject();
+            player.AddComponent<Player>();
+            
+            if (clientManager._networkManager != null)
+            {
+                clientManager.ConnectToServer(ipAddress, port, PlayerNameInput.text, ColorSelector.value);
+            }
+            else
+            {
+                Debug.LogError("ClientNetworkManager not found in scene!");
+            }
         }
 
         private void SwitchToChatScreen()
