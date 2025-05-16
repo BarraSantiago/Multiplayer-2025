@@ -1,4 +1,5 @@
-﻿using MultiplayerLib.Game;
+﻿using System;
+using MultiplayerLib.Game;
 using UnityEngine;
 
 namespace Game
@@ -37,6 +38,14 @@ namespace Game
             if (!IsGrounded || !isJumping) return;
             _rigidbody.AddForce(Vector2.up * JumpForce, ForceMode.Impulse);
             IsGrounded = false;
+        }
+
+        private void OnCollisionEnter(Collision other)
+        {
+            if (other.gameObject.CompareTag("Ground"))
+            {
+                IsGrounded = true;
+            }
         }
 
         private void OnTriggerEnter(Collider other)

@@ -55,7 +55,7 @@ namespace Network.Factory
                 _owner = owner;
             }
 
-            public override void CreateGameObject(NetworkObjectCreateMessage createMsg)
+            public override void CreateGameObject(NetworkObject createMsg)
             {
                 if (!_owner._prefabs.TryGetValue(createMsg.PrefabType, out GameObject prefab))
                 {
@@ -63,20 +63,13 @@ namespace Network.Factory
                     return;
                 }
 
-                Vector3 position = new Vector3(createMsg.Position.X, createMsg.Position.Y, createMsg.Position.Z);
+                Vector3 position = new Vector3(createMsg.CurrentPos.X, createMsg.CurrentPos.Y, createMsg.CurrentPos.Z);
                 GameObject instance = Instantiate(prefab, position, Quaternion.identity);
 
                 UnityNetObject unityNetObj = instance.AddComponent<UnityNetObject>();
-                NetworkObject netObj = createMsg.PrefabType switch
-                {
-                    NetObjectTypes.Player => new NetPlayer(createMsg.Position, NetObjectTypes.Player),
-                    NetObjectTypes.Projectile => new Bullet(createMsg.Position, NetObjectTypes.Projectile),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
+                NetworkObject netObj = createMsg;
 
                 unityNetObj.NetworkObject = netObj;
-                netObj.Initialize(createMsg.NetworkId, false, createMsg.PrefabType);
-
                 _networkObjects[createMsg.NetworkId] = netObj;
                 _owner._unityObjects[createMsg.NetworkId] = unityNetObj;
                 if (createMsg.PrefabType == NetObjectTypes.Player)
@@ -92,6 +85,18 @@ namespace Network.Factory
                 NetworkObject netObj = unityNetObj.NetworkObject;
                 netObj.CurrentPos = position;
                 netObj.LastUpdatedPos = position;
+            }
+
+            protected override void RemoveNetworkObject(int networkId)
+            {
+                if (_networkObjects.TryGetValue(networkId, out NetworkObject? netObj))
+                {
+                    netObj.OnNetworkDestroy(); 
+                }
+
+                if (!_owner._unityObjects.TryGetValue(networkId, out UnityNetObject unityNetObj)) return;
+                Destroy(unityNetObj.gameObject);
+                _owner._unityObjects.Remove(networkId);
             }
         }
     }
