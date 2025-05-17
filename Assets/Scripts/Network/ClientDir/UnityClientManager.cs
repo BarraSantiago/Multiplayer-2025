@@ -23,11 +23,13 @@ namespace Network.ClientDir
 
         private void Awake()
         {
+            UnityConsoleMessages.Initialize();
             _networkManager = new ClientNetworkManager();
             ClientNetworkManager.SetInstance(_networkManager);
 
             _messageDispatcher = new ClientMessageDispatcher();
             _networkManager._messageDispatcher = _messageDispatcher;
+            _networkManager.ServerTimeout = 30;
         }
 
         public void ConnectToServer(IPAddress ip, int port, string pName, int color)

@@ -25,12 +25,13 @@ namespace Game
             ExecuteInput();
         }
 
-        private void HandleMovement(System.Numerics.Vector2 moveDirection)
+        private void HandleMovement(float xMovement)
         {
-            moveDirection.X *= Speed;
-            moveDirection.Y *= Speed;
-            Vector2 moveVelocity = new Vector2(){x = moveDirection.X, y = moveDirection.Y};
-            _rigidbody.linearVelocity = moveVelocity;
+            Vector2 moveDirection = new Vector2(xMovement, 0);
+            moveDirection.Normalize();
+            moveDirection *= Speed;
+            moveDirection.y = _rigidbody.linearVelocity.y;
+            _rigidbody.linearVelocity = moveDirection;
         }
 
         private void HandleJump(bool isJumping)
@@ -75,7 +76,7 @@ namespace Game
             {
                 gameObject.transform.localScale = new Vector3(1, 1f, 1);
                 
-                HandleMovement(_input.MoveDirection);
+                HandleMovement(_input.xMovement);
                 HandleJump(_input.IsJumping);
             }
         }

@@ -25,12 +25,11 @@ namespace Game
 
         private void SendInput()
         {
-            Vector2 moveDirection = Vector2.Zero;
-            if (Input.GetKey(KeyCode.A)) moveDirection.X -= 1;
-            if (Input.GetKey(KeyCode.D)) moveDirection.X += 1;
+            float xMovement = 0;
+            if (Input.GetKey(KeyCode.A)) xMovement -= 1;
+            if (Input.GetKey(KeyCode.D)) xMovement += 1;
 
-            if (moveDirection.LengthSquared() > 1f)
-                moveDirection = Vector2.Normalize(moveDirection);
+            if (xMovement > 1f || xMovement < -1f) xMovement = Mathf.Clamp(xMovement, -1f, 1f);
             
                 
             bool isShooting = Input.GetKey(KeyCode.Mouse0);
@@ -39,13 +38,13 @@ namespace Game
 
             PlayerInput inputData = new PlayerInput
             {
-                MoveDirection = moveDirection,
+                xMovement = xMovement,
                 IsShooting = isShooting,
                 IsJumping = isJumping,
                 IsCrouching = isCrouching,
             };
             
-            bool hasMovement = !Mathf.Approximately(moveDirection.LengthSquared(), 0f);
+            bool hasMovement = !Mathf.Approximately(xMovement, 0f);
             bool hasAction = isShooting || isJumping || isCrouching;
             bool inputChanged = !InputEquals(_lastSentInput, inputData);
 
@@ -56,7 +55,7 @@ namespace Game
         
         private bool InputEquals(PlayerInput a, PlayerInput b)
         {
-            return a.MoveDirection == b.MoveDirection &&
+            return Mathf.Approximately(a.xMovement, b.xMovement) &&
                    a.IsShooting == b.IsShooting &&
                    a.IsJumping == b.IsJumping &&
                    a.IsCrouching == b.IsCrouching;

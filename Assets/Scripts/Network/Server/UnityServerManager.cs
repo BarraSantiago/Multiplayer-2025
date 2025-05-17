@@ -14,21 +14,23 @@ namespace Network.Server
 
         private void Awake()
         {
+            UnityConsoleMessages.Initialize();
             _playerManager = new PlayerManager();
             NetworkFactoryManager.PlayerManager = _playerManager;
             _networkManager = new ServerNetworkManager();
             
-            _networkManager.Init();
             ServerNetworkManager.SetInstance(_networkManager);
             _messageDispatcher = new UnityServerMessageDispatcher(_networkManager.ClientManager)
             {
                 PlayerManager = _playerManager
             };
-
             _networkManager._messageDispatcher = _messageDispatcher;
+            _networkManager.Init(ref _messageDispatcher.OnNewClient);
+
 
             _networkManager.StartServer(serverPort);
-
+            _networkManager.TimeOut = 30;
+            
             Debug.Log($"Server started on port {serverPort}");
         }
 
