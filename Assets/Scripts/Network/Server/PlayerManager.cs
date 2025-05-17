@@ -4,7 +4,7 @@ using Game;
 using MultiplayerLib.Game;
 using UnityEngine;
 
-namespace Network
+namespace Network.Server
 {
     public class PlayerManager
     {
@@ -31,14 +31,11 @@ namespace Network
             return player;
         }
 
-        public bool RemovePlayer(int clientId)
+        public void RemovePlayer(int clientId)
         {
-            if (!_players.TryRemove(clientId, out GameObject player))
-                return false;
+            if (!_players.TryRemove(clientId, out GameObject player)) return;
 
             if (player) Object.Destroy(player);
-
-            return true;
         }
 
         public void UpdatePlayerPosition(int clientId, Vector3 position)

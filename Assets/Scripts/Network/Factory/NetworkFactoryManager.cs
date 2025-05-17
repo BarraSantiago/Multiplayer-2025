@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using MultiplayerLib.Game;
 using MultiplayerLib.Network.Factory;
+using Network.Server;
 using UnityEngine;
 
 namespace Network.Factory

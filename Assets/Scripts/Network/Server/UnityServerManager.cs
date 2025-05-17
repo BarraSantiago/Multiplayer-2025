@@ -26,7 +26,7 @@ namespace Network.Server
             };
             _networkManager._messageDispatcher = _messageDispatcher;
             _networkManager.Init(ref _messageDispatcher.OnNewClient);
-
+            _messageDispatcher.OnClientDisconnect += _playerManager.RemovePlayer;
 
             _networkManager.StartServer(serverPort);
             _networkManager.TimeOut = 30;
@@ -42,11 +42,13 @@ namespace Network.Server
         private void OnApplicationQuit()
         {
             _networkManager.Dispose();
+            _playerManager.Clear();
         }
 
         private void OnDestroy()
         {
             _networkManager.Dispose();
+            _playerManager.Clear();
         }
     }
 }
