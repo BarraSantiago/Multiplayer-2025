@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using MultiplayerLib.Network.ClientDir;
-using MultiplayerLib.Network.Messages;
 using UnityEngine;
 
 namespace Network.ClientDir
@@ -30,12 +29,13 @@ namespace Network.ClientDir
             _messageDispatcher = new ClientMessageDispatcher();
             _networkManager._messageDispatcher = _messageDispatcher;
             _networkManager.ServerTimeout = 30;
+            _networkManager.Init();
         }
 
         public void ConnectToServer(IPAddress ip, int port, string pName, int color)
         {
             IsConnected = true;
-            _networkManager.StartClient(ip, port, pName, color);
+            _networkManager.ConnectToMatchmaker(ip, port, pName, color);
         }
 
         private void Update()

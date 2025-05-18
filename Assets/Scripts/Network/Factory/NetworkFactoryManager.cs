@@ -15,6 +15,7 @@ namespace Network.Factory
         private Dictionary<NetObjectTypes, GameObject> _prefabs = new();
         private Dictionary<int, UnityNetObject> _unityObjects = new();
         private NetworkFactoryImplementation _factory;
+
         private void Awake()
         {
             _factory = new NetworkFactoryImplementation();
@@ -60,17 +61,25 @@ namespace Network.Factory
             {
                 if (!_owner._prefabs.TryGetValue(createMsg.PrefabType, out GameObject prefab))
                 {
-                    Debug.LogError($"[NetworkFactoryManager] No prefab registered for NetObjectType: {createMsg.PrefabType}");
+                    Debug.LogError(
+                        $"[NetworkFactoryManager] No prefab registered for NetObjectType: {createMsg.PrefabType}");
                     return;
                 }
 
                 Vector3 position = new Vector3(createMsg.CurrentPos.X, createMsg.CurrentPos.Y, createMsg.CurrentPos.Z);
                 GameObject instance = Instantiate(prefab, position, Quaternion.identity);
-
+                instance.GetComponent<MeshRenderer>().material.color = createMsg.Color switch
+                {
+                    0 => Color.red,
+                    1 => Color.blue,
+                    2 => Color.green,
+                    _ => Color.red
+                };
                 UnityNetObject unityNetObj = instance.AddComponent<UnityNetObject>();
                 NetworkObject netObj = createMsg;
 
                 unityNetObj.NetworkObject = netObj;
+
                 _networkObjects[createMsg.NetworkId] = netObj;
                 _owner._unityObjects[createMsg.NetworkId] = unityNetObj;
                 if (createMsg.PrefabType == NetObjectTypes.Player)
@@ -92,7 +101,7 @@ namespace Network.Factory
             {
                 if (_networkObjects.TryGetValue(networkId, out NetworkObject? netObj))
                 {
-                    netObj.OnNetworkDestroy(); 
+                    netObj.OnNetworkDestroy();
                 }
 
                 if (!_owner._unityObjects.TryGetValue(networkId, out UnityNetObject unityNetObj)) return;

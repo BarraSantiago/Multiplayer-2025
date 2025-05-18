@@ -1,4 +1,5 @@
-﻿using MultiplayerLib.Network.Server;
+﻿using System.Net;
+using MultiplayerLib.Network.Server;
 using Network.Factory;
 using UnityEngine;
 
@@ -6,11 +7,13 @@ namespace Network.Server
 {
     public class UnityServerManager : MonoBehaviour
     {
-        [SerializeField] private int serverPort = 12346;
-
         private ServerNetworkManager _networkManager;
         private PlayerManager _playerManager;
         private UnityServerMessageDispatcher _messageDispatcher;
+
+        public int ServerPort { get; set; } = 7777;
+        public int ServerId { get; set; } = 0;
+        public IPEndPoint MatchmakerEndpoint { get; set; }
 
         private void Awake()
         {
@@ -18,7 +21,7 @@ namespace Network.Server
             _playerManager = new PlayerManager();
             NetworkFactoryManager.PlayerManager = _playerManager;
             _networkManager = new ServerNetworkManager();
-            
+
             ServerNetworkManager.SetInstance(_networkManager);
             _messageDispatcher = new UnityServerMessageDispatcher(_networkManager.ClientManager)
             {
@@ -28,10 +31,17 @@ namespace Network.Server
             _networkManager.Init(ref _messageDispatcher.OnNewClient);
             _messageDispatcher.OnClientDisconnect += _playerManager.RemovePlayer;
 
-            _networkManager.StartServer(serverPort);
+            // Uncomment and use proper values
+            if (MatchmakerEndpoint != null)
+            {
+                _networkManager.SetMatchmakerInfo(MatchmakerEndpoint.Address, MatchmakerEndpoint.Port, ServerId);
+            }
             _networkManager.TimeOut = 30;
-            
-            Debug.Log($"Server started on port {serverPort}");
+        }
+
+        public PlayerManager GetPlayerManager()
+        {
+            return _playerManager;
         }
 
         private void Update()
@@ -49,6 +59,12 @@ namespace Network.Server
         {
             _networkManager.Dispose();
             _playerManager.Clear();
+        }
+
+        public void StartServer()
+        {
+            _networkManager.StartServer(ServerPort);
+            Debug.Log($"Server started on port {ServerPort}");
         }
     }
 }
