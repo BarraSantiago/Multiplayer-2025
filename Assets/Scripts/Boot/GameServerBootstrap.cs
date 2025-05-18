@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using Network.Server;
 using UnityEngine;
 
@@ -9,7 +10,6 @@ namespace Boot
     public class GameServerBootstrap : MonoBehaviour
     {
         [SerializeField] private int defaultPort = 12346;
-        [SerializeField] private UnityServerManager serverManagerPrefab;
 
         private void Awake()
         {
@@ -74,20 +74,16 @@ namespace Boot
 
                 // Create and configure the server manager
                 UnityServerManager serverManager;
-                if (serverManagerPrefab != null)
-                {
-                    serverManager = Instantiate(serverManagerPrefab);
-                }
-                else
-                {
-                    GameObject serverObj = new GameObject("ServerManager");
-                    serverManager = serverObj.AddComponent<UnityServerManager>();
-                }
+                
+                GameObject serverObj = new GameObject("ServerManager");
+                serverManager = serverObj.AddComponent<UnityServerManager>();
+                
 
                 // Configure the server manager
                 serverManager.ServerPort = port;
                 serverManager.ServerId = serverId;
                 serverManager.MatchmakerEndpoint = new IPEndPoint(IPAddress.Parse(matchmakerIp), matchmakerPort);
+                Thread.Sleep(100);
                 serverManager.StartServer();
                 // Keep this object alive
                 DontDestroyOnLoad(gameObject);

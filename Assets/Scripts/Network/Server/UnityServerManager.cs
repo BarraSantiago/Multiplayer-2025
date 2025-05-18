@@ -1,5 +1,8 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
+using System.Threading;
 using MultiplayerLib.Network.Server;
+using MultiplayerLib.Utils;
 using Network.Factory;
 using UnityEngine;
 
@@ -14,7 +17,9 @@ namespace Network.Server
         public int ServerPort { get; set; } = 7777;
         public int ServerId { get; set; } = 0;
         public IPEndPoint MatchmakerEndpoint { get; set; }
-
+        private Thread _serverThread;
+        private bool _isRunning;
+        
         private void Awake()
         {
             UnityConsoleMessages.Initialize();
@@ -53,18 +58,47 @@ namespace Network.Server
         {
             _networkManager.Dispose();
             _playerManager.Clear();
+            StopServer();
         }
 
         private void OnDestroy()
         {
             _networkManager.Dispose();
             _playerManager.Clear();
+            StopServer();
         }
 
         public void StartServer()
         {
+            _isRunning = true;
+            // Use a field to store the thread reference
+            _serverThread = new Thread(ServerThreadMethod);
+            _serverThread.IsBackground = true; // Make it a background thread
             _networkManager.StartServer(ServerPort);
-            Debug.Log($"Server started on port {ServerPort}");
+            ConsoleMessages.Log($"Server started on port {ServerPort}");
+        }
+
+        public void StopServer()
+        {
+            if (!_isRunning) return;
+
+            _isRunning = false;
+
+            if (_serverThread == null || !_serverThread.IsAlive) return;
+            if (_serverThread.Join(1000)) return;
+            Debug.LogWarning("Server thread did not terminate gracefully, aborting");
+            try
+            {
+                _serverThread.Interrupt();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error stopping server thread: {ex.Message}");
+            }
+        }
+        private void ServerThreadMethod()
+        {
+            _serverThread.Start();
         }
     }
 }

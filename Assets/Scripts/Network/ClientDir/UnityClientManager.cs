@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using MultiplayerLib.Network.ClientDir;
+using TMPro;
 using UnityEngine;
 
 namespace Network.ClientDir
@@ -13,6 +14,7 @@ namespace Network.ClientDir
         [Header("Player Settings")] 
         [SerializeField] private string playerName = "Player";
         [SerializeField] private int playerColor = 0;
+        [SerializeField] private TMP_Text heartbeatText;
 
         public ClientNetworkManager _networkManager;
         private ClientMessageDispatcher _messageDispatcher;
@@ -42,6 +44,7 @@ namespace Network.ClientDir
         {
             if (IsConnected)
             {
+                heartbeatText.text = "Ping: " + _networkManager._messageDispatcher.CurrentLatency; 
                 _networkManager.Tick();
             }
         }
