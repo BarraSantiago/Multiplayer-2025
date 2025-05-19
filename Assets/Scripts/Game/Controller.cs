@@ -12,7 +12,8 @@ namespace Game
 
         private Rigidbody _rigidbody;
         private PlayerInput _input;
-
+        public bool movingRight = true;
+        public bool isCrouching = false;
         private void Start()
         {
             _rigidbody = gameObject.AddComponent<Rigidbody>();
@@ -31,6 +32,7 @@ namespace Game
             moveDirection.Normalize();
             moveDirection *= Speed;
             moveDirection.y = _rigidbody.linearVelocity.y;
+            if(!Mathf.Approximately(xMovement, 0)) movingRight = xMovement > 0;
             _rigidbody.linearVelocity = moveDirection;
         }
 
@@ -64,16 +66,14 @@ namespace Game
 
         private void ExecuteInput()
         {
-            if (_input.IsShooting)
-            {
-            }
-
             if (_input.IsCrouching)
             {
+                isCrouching = true;
                 gameObject.transform.localScale = new Vector3(1, 0.5f, 1);
             }
             else
             {
+                isCrouching = false;
                 gameObject.transform.localScale = new Vector3(1, 1f, 1);
                 
                 HandleMovement(_input.xMovement);

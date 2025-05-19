@@ -75,6 +75,7 @@ namespace Network.Server
             _serverThread = new Thread(ServerThreadMethod);
             _serverThread.IsBackground = true; // Make it a background thread
             _networkManager.StartServer(ServerPort);
+            _networkManager.OnDispose += StopServer;
             ConsoleMessages.Log($"Server started on port {ServerPort}");
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Game;
 using MultiplayerLib.Network.ClientDir;
 using TMPro;
 using UnityEngine;
@@ -15,7 +16,7 @@ namespace Network.ClientDir
         [SerializeField] private string playerName = "Player";
         [SerializeField] private int playerColor = 0;
         [SerializeField] private TMP_Text heartbeatText;
-
+        [SerializeField] private GameResult gameResult;
         public ClientNetworkManager _networkManager;
         private ClientMessageDispatcher _messageDispatcher;
 
@@ -32,6 +33,7 @@ namespace Network.ClientDir
             _networkManager._messageDispatcher = _messageDispatcher;
             _networkManager.ServerTimeout = 30;
             _networkManager.Init();
+            ClientMessageDispatcher.OnGameEnd += gameResult.OnGameResult;
         }
 
         public void ConnectToServer(IPAddress ip, int port, string pName, int color)
@@ -44,7 +46,7 @@ namespace Network.ClientDir
         {
             if (IsConnected)
             {
-                heartbeatText.text = "Ping: " + _networkManager._messageDispatcher.CurrentLatency; 
+                heartbeatText.text = "Ping: " + _networkManager._messageDispatcher.CurrentLatency.ToString("F0"); 
                 _networkManager.Tick();
             }
         }

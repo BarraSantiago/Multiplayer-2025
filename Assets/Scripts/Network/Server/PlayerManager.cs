@@ -85,7 +85,33 @@ namespace Network.Server
                 controller.UpdateInput(input);
             }
         }
+        
+        public bool IsMovingRight(int clientId)
+        {
+            if (_playerControllers.TryGetValue(clientId, out Controller controller))
+            {
+                return controller.movingRight;
+            }
+            else
+            {
+                Debug.LogWarning($"[PlayerManager] Player with id {clientId} not found");
+                return false;
+            }
+        }
 
+        public bool IsCrouching(int clientId)
+        {
+            if (_playerControllers.TryGetValue(clientId, out Controller controller))
+            {
+                return controller.isCrouching;
+            }
+            else
+            {
+                Debug.LogWarning($"[PlayerManager] Player with id {clientId} not found");
+                return false;
+            }
+        }
+        
         public int GetPlayerColor(int clientId)
         {
             if (_playerColor.TryGetValue(clientId, out int color))
