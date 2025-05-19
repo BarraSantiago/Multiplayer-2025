@@ -32,7 +32,6 @@ namespace Game
             moveDirection.Normalize();
             moveDirection *= Speed;
             moveDirection.y = _rigidbody.linearVelocity.y;
-            if(!Mathf.Approximately(xMovement, 0)) movingRight = xMovement > 0;
             _rigidbody.linearVelocity = moveDirection;
         }
 
@@ -62,6 +61,7 @@ namespace Game
         public void UpdateInput(PlayerInput input)
         {
             _input = input;
+            if (!Mathf.Approximately(input.xMovement, 0)) movingRight = input.xMovement > 0;
         }
 
         private void ExecuteInput()
