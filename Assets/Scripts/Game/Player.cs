@@ -49,7 +49,7 @@ namespace Game
             bool inputChanged = !InputEquals(_lastSentInput, inputData);
 
             if (!hasMovement && !hasAction && !inputChanged) return;
-            ClientNetworkManager.OnSendToServer?.Invoke(inputData, MessageType.PlayerInput, false);
+            ClientNetworkManager.OnSendToServer?.Invoke(inputData, MessageType.PlayerInput, false, false);
             _lastSentInput = inputData;
         }
         

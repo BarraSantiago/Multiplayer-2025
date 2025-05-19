@@ -43,6 +43,7 @@ namespace UI
             
             if (clientManager._networkManager != null)
             {
+                ClientNetworkManager._playerColor = ColorSelector.value;
                 clientManager.ConnectToServer(ipAddress, port, PlayerNameInput.text, ColorSelector.value);
             }
             else

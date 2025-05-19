@@ -46,7 +46,7 @@ namespace Network.ClientDir
         public void ConnectToServer(IPAddress ip, int port, string pName, int color)
         {
             IsConnected = true;
-            _networkManager.ConnectToMatchmaker(ip, port, pName, color);
+            _networkManager.StartClient(ip, port, pName, color);
         }
 
         private void Update()

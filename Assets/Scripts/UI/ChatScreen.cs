@@ -28,7 +28,7 @@ namespace UI
         {
             if (inputMessage.text == "") return;
             
-            ClientNetworkManager.OnSendToServer?.Invoke(inputMessage.text, MessageType.Console, false);
+            ClientNetworkManager.OnSendToServer?.Invoke(inputMessage.text, MessageType.Console, false, false);
             inputMessage.ActivateInputField();
             inputMessage.Select();
             inputMessage.text = "";
