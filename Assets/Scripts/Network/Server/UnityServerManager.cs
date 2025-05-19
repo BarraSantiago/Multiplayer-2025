@@ -71,9 +71,6 @@ namespace Network.Server
         public void StartServer()
         {
             _isRunning = true;
-            // Use a field to store the thread reference
-            _serverThread = new Thread(ServerThreadMethod);
-            _serverThread.IsBackground = true; // Make it a background thread
             _networkManager.StartServer(ServerPort);
             _networkManager.OnDispose += StopServer;
             ConsoleMessages.Log($"Server started on port {ServerPort}");
@@ -96,10 +93,6 @@ namespace Network.Server
             {
                 Debug.LogError($"Error stopping server thread: {ex.Message}");
             }
-        }
-        private void ServerThreadMethod()
-        {
-            _serverThread.Start();
         }
     }
 }

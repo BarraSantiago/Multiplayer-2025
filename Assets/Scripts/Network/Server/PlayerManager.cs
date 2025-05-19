@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Game;
 using MultiplayerLib.Game;
+using MultiplayerLib.Network.ClientDir;
 using UnityEngine;
 
 namespace Network.Server
@@ -31,9 +32,9 @@ namespace Network.Server
             return player;
         }
 
-        public void RemovePlayer(int clientId)
+        public void RemovePlayer(Client client)
         {
-            if (!_players.TryRemove(clientId, out GameObject player)) return;
+            if (!_players.TryRemove(client.id, out GameObject player)) return;
 
             if (player) Object.Destroy(player);
         }
