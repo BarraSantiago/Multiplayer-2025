@@ -9,12 +9,16 @@ namespace Network.ClientDir
 {
     public class UnityClientManager : MonoBehaviour
     {
-        [Header("Connection Settings")] 
-        [SerializeField] private string serverIp = "127.0.0.1";
-        [SerializeField] private int serverPort = 12346;
+        [Header("Connection Settings")] [SerializeField]
+        private string serverIp = "127.0.0.1";
 
-        [Header("Player Settings")] 
-        [SerializeField] private string playerName = "Player";
+        [SerializeField] private int serverPort = 12346;
+        [SerializeField] private bool ConnectToMatchmaker = false;
+
+
+        [Header("Player Settings")] [SerializeField]
+        private string playerName = "Player";
+
         [SerializeField] private int playerColor = 0;
         [SerializeField] private TMP_Text heartbeatText;
         [SerializeField] private GameResult gameResult;
@@ -32,28 +36,32 @@ namespace Network.ClientDir
             ClientNetworkManager.SetInstance(_networkManager);
 
             _messageDispatcher = new ClientMessageDispatcher();
-            BaseMessageDispatcher.OnPingBroadcast += (ping) =>
-            {
-                pingBroadcastText.text = ping;
-            };
+            BaseMessageDispatcher.OnPingBroadcast += (ping) => { pingBroadcastText.text = ping; };
             _networkManager._messageDispatcher = _messageDispatcher;
             _networkManager.ServerTimeout = 30;
             _networkManager.Init();
             ClientMessageDispatcher.OnGameEnd += gameResult.OnGameResult;
-            
         }
+
 
         public void ConnectToServer(IPAddress ip, int port, string pName, int color)
         {
             IsConnected = true;
-            _networkManager.StartClient(ip, port, pName, color);
+            if (ConnectToMatchmaker)
+            {
+                _networkManager.ConnectToMatchmaker(ip, port, pName, color);
+            }
+            else
+            {
+                _networkManager.StartClient(ip, port, pName, color);
+            }
         }
 
         private void Update()
         {
             if (IsConnected)
             {
-                heartbeatText.text = "Ping: " + _networkManager._messageDispatcher.CurrentLatency.ToString("F0"); 
+                heartbeatText.text = "Ping: " + _networkManager._messageDispatcher.CurrentLatency.ToString("F0");
                 _networkManager.Tick();
             }
         }
