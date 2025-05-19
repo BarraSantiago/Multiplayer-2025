@@ -1,5 +1,6 @@
 ﻿using System;
 using MultiplayerLib.Game;
+using MultiplayerLib.Network.Factory;
 using Network.Factory;
 using UnityEngine;
 
@@ -7,8 +8,7 @@ namespace Game
 {
     public class BulletDamage : MonoBehaviour
     {
-        public int NetworkId { get; set; }
-        public static Action<int> OnDestroy;
+        public NetworkObject NetworkObject { get; set; }
 
         private void OnTriggerEnter(Collider other)
         {
@@ -20,7 +20,7 @@ namespace Game
                 netPlayer.Hp -= NetworkFactoryManager.PlayerManager.IsCrouching(netPlayer.NetworkId) ? 5 : 10;
             }
 
-            OnDestroy?.Invoke(NetworkId);
+            NetworkObject.DestroySelf();
             this.enabled = false;
         }
     }

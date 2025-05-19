@@ -16,7 +16,7 @@ namespace Network.Factory
         private Dictionary<NetObjectTypes, GameObject> _prefabs = new();
         private Dictionary<int, UnityNetObject> _unityObjects = new();
         private NetworkFactoryImplementation _factory;
-            
+
         private void Awake()
         {
             _factory = new NetworkFactoryImplementation();
@@ -53,10 +53,10 @@ namespace Network.Factory
         {
             private NetworkFactoryManager _owner;
             private Action<int> OnDestroy;
+
             public void Initialize(NetworkFactoryManager owner)
             {
                 _owner = owner;
-                BulletDamage.OnDestroy += OnDestroyObject;
             }
 
             public override void CreateGameObject(NetworkObject createMsg, bool isOwner)
@@ -70,6 +70,8 @@ namespace Network.Factory
 
                 Vector3 position = new Vector3(createMsg.CurrentPos.X, createMsg.CurrentPos.Y, createMsg.CurrentPos.Z);
                 GameObject instance = Instantiate(prefab, position, Quaternion.identity);
+                UnityNetObject unityNetObj = instance.AddComponent<UnityNetObject>();
+                NetworkObject netObj = createMsg;
                 instance.GetComponent<MeshRenderer>().material.color = createMsg.Color switch
                 {
                     0 => Color.red,
@@ -80,18 +82,21 @@ namespace Network.Factory
 
                 if (isOwner && createMsg.PrefabType == NetObjectTypes.Projectile)
                 {
+                    instance.transform.position =
+                        new Vector3(PlayerManager.IsMovingRight(createMsg.CreatorId) ? position.x + 1 : position.x - 1,
+                            position.y, position.z);
                     Rigidbody rigidBody = instance.AddComponent<Rigidbody>();
                     rigidBody.isKinematic = false;
                     rigidBody.useGravity = false;
                     rigidBody.constraints = RigidbodyConstraints.FreezeRotation;
                     rigidBody.collisionDetectionMode = CollisionDetectionMode.Continuous;
                     rigidBody.interpolation = RigidbodyInterpolation.Interpolate;
-                    rigidBody.linearVelocity = new Vector3(PlayerManager.IsMovingRight(createMsg.CreatorId) ? BulletSpeed : -BulletSpeed, 0, 0);
+                    rigidBody.linearVelocity =
+                        new Vector3(PlayerManager.IsMovingRight(createMsg.CreatorId) ? BulletSpeed : -BulletSpeed, 0,
+                            0);
                     BulletDamage bullet = instance.AddComponent<BulletDamage>();
-                    bullet.NetworkId = createMsg.NetworkId;
+                    bullet.NetworkObject = netObj;
                 }
-                UnityNetObject unityNetObj = instance.AddComponent<UnityNetObject>();
-                NetworkObject netObj = createMsg;
 
                 unityNetObj.NetworkObject = netObj;
 
