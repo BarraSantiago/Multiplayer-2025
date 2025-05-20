@@ -500,7 +500,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serverIp: 127.0.0.1
   serverPort: 12346
-  ConnectToMatchmaker: 1
+  ConnectToMatchmaker: 0
   playerName: Player
   playerColor: 0
   heartbeatText: {fileID: 1774592202}
