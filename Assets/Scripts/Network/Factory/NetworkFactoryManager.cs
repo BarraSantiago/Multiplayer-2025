@@ -24,12 +24,7 @@ namespace Network.Factory
             _factory.Initialize(this);
             RegisterPrefabs();
         }
-
-        private void Update()
-        {
-            _factory.SyncPositions();
-        }
-
+        
         private void RegisterPrefabs()
         {
             NetObjectTypes[] netObjTypes = (NetObjectTypes[])Enum.GetValues(typeof(NetObjectTypes));
@@ -68,7 +63,7 @@ namespace Network.Factory
                     return;
                 }
 
-                Vector3 position = new Vector3(createMsg.CurrentPos.X, createMsg.CurrentPos.Y, createMsg.CurrentPos.Z);
+                Vector3 position = new Vector3(createMsg.X, createMsg.Y);
                 GameObject instance = Instantiate(prefab, position, Quaternion.identity);
                 UnityNetObject unityNetObj = instance.AddComponent<UnityNetObject>();
                 NetworkObject netObj = createMsg;
@@ -79,33 +74,15 @@ namespace Network.Factory
                     2 => Color.green,
                     _ => Color.red
                 };
-
-                if (isOwner && createMsg.PrefabType == NetObjectTypes.Projectile)
-                {
-                    instance.transform.position =
-                        new Vector3(PlayerManager.IsMovingRight(createMsg.CreatorId) ? position.x + 1 : position.x - 1,
-                            position.y, position.z);
-                    Rigidbody rigidBody = instance.AddComponent<Rigidbody>();
-                    rigidBody.isKinematic = false;
-                    rigidBody.useGravity = false;
-                    rigidBody.constraints = RigidbodyConstraints.FreezeRotation;
-                    rigidBody.collisionDetectionMode = CollisionDetectionMode.Continuous;
-                    rigidBody.interpolation = RigidbodyInterpolation.Interpolate;
-                    rigidBody.linearVelocity =
-                        new Vector3(PlayerManager.IsMovingRight(createMsg.CreatorId) ? BulletSpeed : -BulletSpeed, 0,
-                            0);
-                    BulletDamage bullet = instance.AddComponent<BulletDamage>();
-                    bullet.NetworkObject = netObj;
-                }
-
+                
                 unityNetObj.NetworkObject = netObj;
 
                 _networkObjects[createMsg.NetworkId] = netObj;
                 _owner._unityObjects[createMsg.NetworkId] = unityNetObj;
-                if (createMsg.PrefabType == NetObjectTypes.Player)
-                {
-                    PlayerManager.CreatePlayer(createMsg.NetworkId, instance);
-                }
+                //if (createMsg.PrefabType == NetObjectTypes.Player)
+                //{
+                //    PlayerManager.CreatePlayer(createMsg.NetworkId, instance);
+                //}
             }
 
             public override void UpdateObjectPosition(int id, System.Numerics.Vector3 position)
@@ -113,8 +90,8 @@ namespace Network.Factory
                 if (!_owner._unityObjects.TryGetValue(id, out UnityNetObject unityNetObj)) return;
                 unityNetObj.transform.position = new Vector3(position.X, position.Y, position.Z);
                 NetworkObject netObj = unityNetObj.NetworkObject;
-                netObj.CurrentPos = position;
-                netObj.LastUpdatedPos = position;
+                netObj.X = position.X;
+                netObj.Y = position.Y;
             }
 
             protected override void RemoveNetworkObject(int networkId)

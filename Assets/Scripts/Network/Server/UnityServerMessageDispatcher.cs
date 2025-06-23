@@ -13,11 +13,6 @@ namespace Network.Server
         {
         }
 
-        protected override void UpdatePlayerPosition(int clientId, Vector3 position)
-        {
-            throw new System.NotImplementedException();
-        }
-
         protected override void UpdatePlayerInput(int clientId, PlayerInput input)
         {
             PlayerManager.UpdatePlayerInput(clientId, input);

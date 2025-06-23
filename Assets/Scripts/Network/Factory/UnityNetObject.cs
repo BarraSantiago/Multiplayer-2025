@@ -10,7 +10,8 @@ namespace Network.Factory
 
         private void Update()
         {
-            NetworkObject.CurrentPos = ConvertToSystemVector3(transform.position);
+            NetworkObject.X = transform.position.x;
+            NetworkObject.Y = transform.position.y;
         }
 
         private System.Numerics.Vector3 ConvertToSystemVector3(Vector3 unityVec)
