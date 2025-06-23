@@ -187,7 +187,4 @@ namespace Game
             winnerText.text = $"{winner} faction wins!";
         }
     }
-
-    // Helper class to manage entity visuals
-    // Update the EntityVisual class
 }

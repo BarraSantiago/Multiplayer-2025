@@ -561,7 +561,7 @@ MonoBehaviour:
     type: 3}
   blueCastlePrefab: {fileID: 5606641665315884433, guid: 9172d367c2df2ef418779eaf0c44a860,
     type: 3}
-  redInfantryPrefab: {fileID: 6416236209069669260, guid: 31da23ce424441e4b9236a52126e426d,
+  redInfantryPrefab: {fileID: 177033343429717943, guid: 45c8c57e889154740b87c2b77a91434d,
     type: 3}
   blueInfantryPrefab: {fileID: 177033343429717943, guid: 708a19fedd7c46241a4f5454cc6f430f,
     type: 3}

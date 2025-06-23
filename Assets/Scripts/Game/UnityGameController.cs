@@ -128,11 +128,9 @@ namespace Game
 
         private void HandleGameOver(FactionType winner)
         {
-            // Update UI for game over
             _unityView.ShowGameOver(winner);
         }
 
-        // Override methods to update the view
         public override bool MoveSelectedUnit(int targetX, int targetY)
         {
             bool result = base.MoveSelectedUnit(targetX, targetY);
@@ -147,7 +145,6 @@ namespace Game
         {
             base.HandleRemoteAction(action);
 
-            // Update the view based on action
             switch (action.Type)
             {
                 case GameActionType.UnitMove:
