@@ -102,7 +102,7 @@ namespace Boot
         {
             try
             {
-                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp))
+                using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp))
                 {
                     socket.Bind(new IPEndPoint(IPAddress.Any, port));
                     return true;

@@ -2,6 +2,7 @@
 using MultiplayerLib.Game;
 using MultiplayerLib.Game.Model;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 
 namespace Game
@@ -9,7 +10,7 @@ namespace Game
     public class UnityView : MonoBehaviour
     {
         [Header("Game References")]
-        [SerializeField] private GameManager gameManager;
+        [SerializeField] public GameManager gameManager;
         
         [Header("Prefabs")]
         [SerializeField] private GameObject redCastlePrefab;
@@ -32,12 +33,7 @@ namespace Game
 
         private Dictionary<int, GameObject> entityObjects = new Dictionary<int, GameObject>();
         private GameObject[,] gridTiles;
-
-        private void Start()
-        {
-            GameManager manager = new GameManager();
-            Initialize(manager);
-        }
+        public float TileSize => tileSize;
 
         public void Initialize(GameManager gameManager)
         {
@@ -49,7 +45,7 @@ namespace Game
         private void CreateGrid()
         {
             gridTiles = new GameObject[GameManager.GridSize, GameManager.GridSize];
-            
+
             for (int y = 0; y < GameManager.GridSize; y++)
             {
                 for (int x = 0; x < GameManager.GridSize; x++)
@@ -72,60 +68,61 @@ namespace Game
         public void UpdateGameView()
         {
             if (gameManager == null) return;
-            
+
             // Clear previous entities
-            foreach (var obj in entityObjects.Values)
+            foreach (GameObject obj in entityObjects.Values)
             {
                 Destroy(obj);
             }
+
             entityObjects.Clear();
-            
+
             // Create castles
             SpawnEntity(gameManager.RedCastle, redCastlePrefab);
             SpawnEntity(gameManager.BlueCastle, blueCastlePrefab);
-            
+
             // Create infantry units
-            foreach (var unit in gameManager.RedUnits)
+            foreach (InfantryUnit unit in gameManager.RedUnits)
             {
                 SpawnEntity(unit, redInfantryPrefab);
             }
-            
-            foreach (var unit in gameManager.BlueUnits)
+
+            foreach (InfantryUnit unit in gameManager.BlueUnits)
             {
                 SpawnEntity(unit, blueInfantryPrefab);
             }
-            
+
             // Update UI
             UpdateUI();
         }
-        
+
         private void SpawnEntity(NetEntity entity, GameObject prefab)
         {
             Vector3 position = GridToWorldPosition((int)entity.X, (int)entity.Y);
             GameObject entityObject = Instantiate(prefab, position, Quaternion.identity, gridContainer);
             entityObject.name = $"{entity.GetType().Name}_{entity.NetworkId}";
-            
+
             // Add component to store entity data and update visual elements
             EntityVisual visual = entityObject.AddComponent<EntityVisual>();
             visual.SetEntity(entity);
-            
+
             entityObjects[entity.NetworkId] = entityObject;
         }
-        
-        private void UpdateUI()
+
+        public void UpdateUI()
         {
             if (turnText != null)
                 turnText.text = $"Turn: {gameManager.CurrentTurn}";
-                
+
             if (movementsText != null)
                 movementsText.text = $"Movements: {gameManager.RemainingMovements}";
-                
+
             if (redCastleHealthText != null)
                 redCastleHealthText.text = $"Red Castle: {gameManager.RedCastle.Hp}/{GameManager.CastleStartingHP}";
-                
+
             if (blueCastleHealthText != null)
                 blueCastleHealthText.text = $"Blue Castle: {gameManager.BlueCastle.Hp}/{GameManager.CastleStartingHP}";
-                
+
             if (gameOverPanel != null)
             {
                 gameOverPanel.SetActive(gameManager.GameOver);
@@ -135,7 +132,7 @@ namespace Game
                 }
             }
         }
-        
+
         // Call this when an entity moves
         public void UpdateEntityPosition(int networkId, int newX, int newY)
         {
@@ -144,7 +141,7 @@ namespace Game
                 obj.transform.position = GridToWorldPosition(newX, newY);
             }
         }
-        
+
         // Call this when an entity is removed
         public void RemoveEntity(int networkId)
         {
@@ -154,35 +151,43 @@ namespace Game
                 entityObjects.Remove(networkId);
             }
         }
+        
+        public void HighlightSelectedUnit(int networkId)
+        {
+            if (entityObjects.TryGetValue(networkId, out GameObject obj))
+            {
+                UnitHighlighter highlighter = obj.GetComponent<UnitHighlighter>() ?? obj.AddComponent<UnitHighlighter>();
+                highlighter.Highlight();
+            }
+        }
+        
+        public void ClearHighlights()
+        {
+            foreach (GameObject obj in entityObjects.Values)
+            {
+                UnitHighlighter highlighter = obj.GetComponent<UnitHighlighter>();
+                if (highlighter)
+                    highlighter.RemoveHighlight();
+            }
+        }
+
+        public void UpdateEntityHealth(int networkId, int health)
+        {
+            if (entityObjects.TryGetValue(networkId, out GameObject obj))
+            {
+                EntityVisual visual = obj.GetComponent<EntityVisual>();
+                if (visual != null)
+                    visual.UpdateHealth(health);
+            }
+        }
+
+        public void ShowGameOver(FactionType winner)
+        {
+            gameOverPanel.SetActive(true);
+            winnerText.text = $"{winner} faction wins!";
+        }
     }
-    
+
     // Helper class to manage entity visuals
-    public class EntityVisual : MonoBehaviour
-    {
-        private NetEntity entity;
-        [SerializeField] private GameObject healthBarPrefab;
-        private GameObject healthBarInstance;
-        
-        public void SetEntity(NetEntity entity)
-        {
-            this.entity = entity;
-            UpdateVisuals();
-        }
-        
-        public void UpdateVisuals()
-        {
-            // Create health bar if needed
-            if (healthBarInstance == null && healthBarPrefab != null)
-            {
-                healthBarInstance = Instantiate(healthBarPrefab, transform);
-                healthBarInstance.transform.localPosition = new Vector3(0, 1, 0);
-            }
-            
-            // Update health bar
-            if (healthBarInstance != null)
-            {
-                // Update health bar visual based on entity.Hp and max health
-            }
-        }
-    }
+    // Update the EntityVisual class
 }

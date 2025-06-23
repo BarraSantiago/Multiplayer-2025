@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 526637032079585833}
   - component: {fileID: 2449934846461168049}
   - component: {fileID: 5078275488896430202}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: RedInfantry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
