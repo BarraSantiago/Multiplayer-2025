@@ -1,4 +1,7 @@
-﻿using MultiplayerLib.Game.Model;
+﻿using System.Collections.Generic;
+using MultiplayerLib.Game.Model;
+using MultiplayerLib.Network.Reflection;
+using MultiplayerLib.Network.Synchronization;
 using UnityEngine;
 
 namespace Game
@@ -10,18 +13,25 @@ namespace Game
 
         private GameManager gameManager;
         private UnityGameController gameController;
-
+        private NetworkObjectTracker _mapper = new NetworkObjectTracker();
         private void Start()
         {
             gameManager = new GameManager();
             unityView.Initialize(gameManager);
             gameController = new UnityGameController(gameManager, playerFaction, unityView);
+            _mapper.RegisterObject(gameManager, 0);
         }
 
         private void Update()
         {
             if (gameController != null)
                 gameController.Update();
+
+            List<byte[]> changes = _mapper.CheckForChanges();
+            if (changes.Count > 0)
+            {
+                Debug.Log(changes.Count);
+            }
         }
     }
 }
