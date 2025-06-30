@@ -17,7 +17,8 @@ namespace Network.Server
         public IPEndPoint MatchmakerEndpoint { get; set; }
         private Thread _serverThread;
         private bool _isRunning;
-        
+        private bool testDone = false;
+
         private void Awake()
         {
             UnityConsoleMessages.Initialize();
@@ -33,19 +34,20 @@ namespace Network.Server
             {
                 _networkManager.SetMatchmakerInfo(MatchmakerEndpoint.Address, MatchmakerEndpoint.Port, ServerId);
             }
+
             _networkManager.TimeOut = 30;
         }
-        private bool testDone = false;
+
+
         private void Update()
         {
             _networkManager.Tick();
-            if(Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
                 if (testDone) return;
                 testDone = true;
-                _networkManager.GameManager.BlueCastle.Hp--;
-                ConsoleMessages.Log($"Blue Castle HP: {_networkManager.GameManager.BlueCastle.Hp}");
-                _networkManager.GameManager.RedUnits.RemoveAt(_networkManager.GameManager.RedUnits.Count - 1);
+                _networkManager.test.ModifyNestedFields();
+                ConsoleMessages.Log("Test fields modified successfully.");
             }
             else
             {

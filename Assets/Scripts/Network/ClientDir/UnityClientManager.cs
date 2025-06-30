@@ -13,7 +13,7 @@ namespace Network.ClientDir
         [SerializeField] private string serverIp = "127.0.0.1";
         [SerializeField] private int serverPort = 12346;
         [SerializeField] private bool ConnectToMatchmaker = false;
-
+        [SerializeField] private int Timeout = 120;
         [Header("Player Settings")] 
         [SerializeField] private string playerName = "Player";
         [SerializeField] private int playerColor = 0;
@@ -36,7 +36,7 @@ namespace Network.ClientDir
             _messageDispatcher = new ClientMessageDispatcher();
             BaseMessageDispatcher.OnPingBroadcast += (ping) => { pingBroadcastText.text = ping; };
             _networkManager._messageDispatcher = _messageDispatcher;
-            _networkManager.ServerTimeout = 30;
+            _networkManager.ServerTimeout = Timeout;
             _networkManager.Init();
             ClientMessageDispatcher.OnGameEnd += gameResult.OnGameResult;
         }

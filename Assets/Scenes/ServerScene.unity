@@ -169,6 +169,7 @@ MonoBehaviour:
   registeredPrefabs:
   - {fileID: 256864484462788253, guid: f2ff0abf5115678499af0cd367990497, type: 3}
   - {fileID: 5244531302253822717, guid: 87e1900007bf7764a80701707b2d1111, type: 3}
+  - {fileID: 256864484462788253, guid: f2ff0abf5115678499af0cd367990497, type: 3}
 --- !u!114 &180350413
 MonoBehaviour:
   m_ObjectHideFlags: 0
