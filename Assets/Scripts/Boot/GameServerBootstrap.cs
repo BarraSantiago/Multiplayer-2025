@@ -10,7 +10,8 @@ namespace Boot
     public class GameServerBootstrap : MonoBehaviour
     {
         [SerializeField] private int defaultPort = 12346;
-
+        [SerializeField] private int disconnectionTimeout = 30; // seconds
+        [SerializeField] private int afkTimeout = 60; // seconds
         private void Awake()
         {
             int port = defaultPort;
@@ -77,14 +78,13 @@ namespace Boot
                 
                 GameObject serverObj = new GameObject("ServerManager");
                 serverManager = serverObj.AddComponent<UnityServerManager>();
-                
 
                 // Configure the server manager
                 serverManager.ServerPort = port;
                 serverManager.ServerId = serverId;
                 serverManager.MatchmakerEndpoint = new IPEndPoint(IPAddress.Parse(matchmakerIp), matchmakerPort);
                 Thread.Sleep(100);
-                serverManager.StartServer();
+                serverManager.StartServer(disconnectionTimeout, afkTimeout);
                 // Keep this object alive
                 DontDestroyOnLoad(gameObject);
                 if (serverManager != null)

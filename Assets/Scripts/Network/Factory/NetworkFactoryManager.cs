@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using Game;
+using MultiplayerLib.Game;
 using MultiplayerLib.Network.Factory;
-using Network.Server;
 using UnityEngine;
+using Vector3 = System.Numerics.Vector3;
 
 namespace Network.Factory
 {
     public class NetworkFactoryManager : MonoBehaviour
     {
+        [SerializeField] private UnityView unityView;
+        
         private static float BulletSpeed = 5;
         public List<GameObject> registeredPrefabs = new();
 
-        public static PlayerManager PlayerManager;
         private Dictionary<NetObjectTypes, GameObject> _prefabs = new();
         private Dictionary<int, UnityNetObject> _unityObjects = new();
         private NetworkFactoryImplementation _factory;
@@ -21,7 +23,7 @@ namespace Network.Factory
         {
             _factory = new NetworkFactoryImplementation();
             NetworkObjectFactory.SetInstance(_factory);
-            _factory.Initialize(this);
+            _factory.Initialize(this, unityView);
             RegisterPrefabs();
         }
         
@@ -48,55 +50,43 @@ namespace Network.Factory
         {
             private NetworkFactoryManager _owner;
             private Action<int> OnDestroy;
-
-            public void Initialize(NetworkFactoryManager owner)
+            private UnityView _unityView;
+            public void Initialize(NetworkFactoryManager owner, UnityView unityView)
             {
                 _owner = owner;
+                _unityView = unityView;
             }
 
-            public override void CreateGameObject(NetworkObject createMsg, bool isOwner)
+            public override void CreateGameObject(INetworkObject netObject, bool isOwner)
             {
-                if (!_owner._prefabs.TryGetValue(createMsg.PrefabType, out GameObject prefab))
+                if (!_owner._prefabs.TryGetValue(netObject.PrefabType, out GameObject prefab))
                 {
                     Debug.LogError(
-                        $"[NetworkFactoryManager] No prefab registered for NetObjectType: {createMsg.PrefabType}");
+                        $"[NetworkFactoryManager] No prefab registered for NetObjectType: {netObject.PrefabType}");
                     return;
                 }
 
-                Vector3 position = new Vector3(createMsg.X, createMsg.Y);
-                GameObject instance = Instantiate(prefab, position, Quaternion.identity);
+                if (_unityView == null) return;
+                GameObject instance = _unityView.SpawnEntity(netObject as NetEntity, prefab);
                 UnityNetObject unityNetObj = instance.AddComponent<UnityNetObject>();
-                NetworkObject netObj = createMsg;
-                instance.GetComponent<MeshRenderer>().material.color = createMsg.Color switch
-                {
-                    0 => Color.red,
-                    1 => Color.blue,
-                    2 => Color.green,
-                    _ => Color.red
-                };
                 
-                unityNetObj.NetworkObject = netObj;
-
-                _networkObjects[createMsg.NetworkId] = netObj;
-                _owner._unityObjects[createMsg.NetworkId] = unityNetObj;
-                //if (createMsg.PrefabType == NetObjectTypes.Player)
-                //{
-                //    PlayerManager.CreatePlayer(createMsg.NetworkId, instance);
-                //}
+                unityNetObj.NetworkObject = netObject;
+                _networkObjects[netObject.NetworkId] = netObject;
+                _owner._unityObjects[netObject.NetworkId] = unityNetObj;
             }
 
-            public override void UpdateObjectPosition(int id, System.Numerics.Vector3 position)
+            public override void UpdateObjectPosition(int id, Vector3 position)
             {
                 if (!_owner._unityObjects.TryGetValue(id, out UnityNetObject unityNetObj)) return;
-                unityNetObj.transform.position = new Vector3(position.X, position.Y, position.Z);
-                NetworkObject netObj = unityNetObj.NetworkObject;
+                unityNetObj.transform.position = new UnityEngine.Vector3(position.X, position.Y, position.Z);
+                INetworkObject netObj = unityNetObj.NetworkObject;
                 netObj.X = position.X;
                 netObj.Y = position.Y;
             }
 
             protected override void RemoveNetworkObject(int networkId)
             {
-                if (_networkObjects.TryGetValue(networkId, out NetworkObject? netObj))
+                if (_networkObjects.TryGetValue(networkId, out INetworkObject? netObj))
                 {
                     netObj.OnNetworkDestroy();
                 }

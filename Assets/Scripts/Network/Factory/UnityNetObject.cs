@@ -5,7 +5,7 @@ namespace Network.Factory
 {
     public class UnityNetObject : MonoBehaviour
     {
-        public NetworkObject NetworkObject { get; set; }
+        public INetworkObject NetworkObject { get; set; }
         private readonly float _positionThreshold = 0.001f;
 
         private void Update()

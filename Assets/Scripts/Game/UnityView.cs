@@ -9,9 +9,6 @@ namespace Game
 {
     public class UnityView : MonoBehaviour
     {
-        [Header("Game References")]
-        [SerializeField] public GameManager gameManager;
-        
         [Header("Prefabs")]
         [SerializeField] private GameObject redCastlePrefab;
         [SerializeField] private GameObject blueCastlePrefab;
@@ -31,13 +28,12 @@ namespace Game
         [SerializeField] private float tileSize = 1f;
         [SerializeField] private Transform gridContainer;
 
-        private Dictionary<int, GameObject> entityObjects = new Dictionary<int, GameObject>();
+        public Dictionary<int, GameObject> entityObjects = new Dictionary<int, GameObject>();
         private GameObject[,] gridTiles;
         public float TileSize => tileSize;
 
-        public void Initialize(GameManager gameManager)
+        public void Initialize()
         {
-            this.gameManager = gameManager;
             CreateGrid();
             UpdateGameView();
         }
@@ -67,8 +63,6 @@ namespace Game
 
         public void UpdateGameView()
         {
-            if (gameManager == null) return;
-
             // Clear previous entities
             foreach (GameObject obj in entityObjects.Values)
             {
@@ -76,7 +70,7 @@ namespace Game
             }
 
             entityObjects.Clear();
-
+            /*
             // Create castles
             SpawnEntity(gameManager.RedCastle, redCastlePrefab);
             SpawnEntity(gameManager.BlueCastle, blueCastlePrefab);
@@ -90,13 +84,13 @@ namespace Game
             foreach (InfantryUnit unit in gameManager.BlueUnits)
             {
                 SpawnEntity(unit, blueInfantryPrefab);
-            }
+            }*/
 
             // Update UI
             UpdateUI();
         }
 
-        private void SpawnEntity(NetEntity entity, GameObject prefab)
+        public GameObject SpawnEntity(NetEntity entity, GameObject prefab)
         {
             Vector3 position = GridToWorldPosition((int)entity.X, (int)entity.Y);
             GameObject entityObject = Instantiate(prefab, position, Quaternion.identity, gridContainer);
@@ -107,30 +101,29 @@ namespace Game
             visual.SetEntity(entity);
 
             entityObjects[entity.NetworkId] = entityObject;
+            return entityObject;
         }
 
         public void UpdateUI()
-        {
-            if (turnText != null)
+        {/*
+            if (turnText)
                 turnText.text = $"Turn: {gameManager.CurrentTurn}";
 
-            if (movementsText != null)
+            if (movementsText)
                 movementsText.text = $"Movements: {gameManager.RemainingMovements}";
 
-            if (redCastleHealthText != null)
-                redCastleHealthText.text = $"Red Castle: {gameManager.RedCastle.Hp}/{GameManager.CastleStartingHP}";
+            if (redCastleHealthText)
+                redCastleHealthText.text = $"Red Castle: {gameManager.RedCastle.Hp}/{100}";
 
-            if (blueCastleHealthText != null)
-                blueCastleHealthText.text = $"Blue Castle: {gameManager.BlueCastle.Hp}/{GameManager.CastleStartingHP}";
+            if (blueCastleHealthText)
+                blueCastleHealthText.text = $"Blue Castle: {gameManager.BlueCastle.Hp}/{100}";
 
-            if (gameOverPanel != null)
+            if (!gameOverPanel) return;
+            gameOverPanel.SetActive(gameManager.GameOver);
+            if (winnerText && gameManager.GameOver)
             {
-                gameOverPanel.SetActive(gameManager.GameOver);
-                if (winnerText != null && gameManager.GameOver)
-                {
-                    winnerText.text = $"{gameManager.Winner} faction wins!";
-                }
-            }
+                winnerText.text = $"{gameManager.Winner} faction wins!";
+            }*/
         }
 
         // Call this when an entity moves
@@ -145,20 +138,16 @@ namespace Game
         // Call this when an entity is removed
         public void RemoveEntity(int networkId)
         {
-            if (entityObjects.TryGetValue(networkId, out GameObject obj))
-            {
-                Destroy(obj);
-                entityObjects.Remove(networkId);
-            }
+            if (!entityObjects.TryGetValue(networkId, out GameObject obj)) return;
+            Destroy(obj);
+            entityObjects.Remove(networkId);
         }
         
         public void HighlightSelectedUnit(int networkId)
         {
-            if (entityObjects.TryGetValue(networkId, out GameObject obj))
-            {
-                UnitHighlighter highlighter = obj.GetComponent<UnitHighlighter>() ?? obj.AddComponent<UnitHighlighter>();
-                highlighter.Highlight();
-            }
+            if (!entityObjects.TryGetValue(networkId, out GameObject obj)) return;
+            UnitHighlighter highlighter = obj.GetComponent<UnitHighlighter>() ?? obj.AddComponent<UnitHighlighter>();
+            highlighter.Highlight();
         }
         
         public void ClearHighlights()
@@ -173,12 +162,10 @@ namespace Game
 
         public void UpdateEntityHealth(int networkId, int health)
         {
-            if (entityObjects.TryGetValue(networkId, out GameObject obj))
-            {
-                EntityVisual visual = obj.GetComponent<EntityVisual>();
-                if (visual != null)
-                    visual.UpdateHealth(health);
-            }
+            if (!entityObjects.TryGetValue(networkId, out GameObject obj)) return;
+            EntityVisual visual = obj.GetComponent<EntityVisual>();
+            if (visual != null)
+                visual.UpdateHealth(health);
         }
 
         public void ShowGameOver(FactionType winner)

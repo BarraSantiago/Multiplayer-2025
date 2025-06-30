@@ -22,7 +22,7 @@ namespace Game
         public void UpdateVisuals()
         {
             // Create health bar if needed
-            if (healthBarInstance == null && healthBarPrefab != null)
+            if (!healthBarInstance && healthBarPrefab)
             {
                 healthBarInstance = Instantiate(healthBarPrefab, transform);
                 healthBarInstance.transform.localPosition = new Vector3(0, 1, 0);
@@ -36,7 +36,7 @@ namespace Game
         {
             // Update health bar
             if (healthBar == null) return;
-            int maxHealth = entity is Castle ? GameManager.CastleStartingHP : GameManager.InfantryStartingHP;
+            int maxHealth = entity is Castle ? 100 : 50;
             healthBar.UpdateHealthBar(currentHealth, maxHealth);
         }
     }

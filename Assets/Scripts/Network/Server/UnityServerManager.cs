@@ -3,7 +3,6 @@ using System.Net;
 using System.Threading;
 using MultiplayerLib.Network.Server;
 using MultiplayerLib.Utils;
-using Network.Factory;
 using UnityEngine;
 
 namespace Network.Server
@@ -11,7 +10,6 @@ namespace Network.Server
     public class UnityServerManager : MonoBehaviour
     {
         private ServerNetworkManager _networkManager;
-        private PlayerManager _playerManager;
         private UnityServerMessageDispatcher _messageDispatcher;
 
         public int ServerPort { get; set; } = 7777;
@@ -23,18 +21,12 @@ namespace Network.Server
         private void Awake()
         {
             UnityConsoleMessages.Initialize();
-            _playerManager = new PlayerManager();
-            NetworkFactoryManager.PlayerManager = _playerManager;
             _networkManager = new ServerNetworkManager();
 
             ServerNetworkManager.SetInstance(_networkManager);
-            _messageDispatcher = new UnityServerMessageDispatcher(_networkManager.ClientManager)
-            {
-                PlayerManager = _playerManager
-            };
+            _messageDispatcher = new UnityServerMessageDispatcher(_networkManager.ClientManager);
             _networkManager._messageDispatcher = _messageDispatcher;
             _networkManager.Init(ref _messageDispatcher.OnNewClient);
-            _messageDispatcher.OnClientDisconnect += _playerManager.RemovePlayer;
 
             // Uncomment and use proper values
             if (MatchmakerEndpoint != null)
@@ -43,35 +35,42 @@ namespace Network.Server
             }
             _networkManager.TimeOut = 30;
         }
-
-        public PlayerManager GetPlayerManager()
-        {
-            return _playerManager;
-        }
-
+        private bool testDone = false;
         private void Update()
         {
             _networkManager.Tick();
+            if(Input.GetKeyDown(KeyCode.Space))
+            {
+                if (testDone) return;
+                testDone = true;
+                _networkManager.GameManager.BlueCastle.Hp--;
+                ConsoleMessages.Log($"Blue Castle HP: {_networkManager.GameManager.BlueCastle.Hp}");
+                _networkManager.GameManager.RedUnits.RemoveAt(_networkManager.GameManager.RedUnits.Count - 1);
+            }
+            else
+            {
+                testDone = false;
+            }
         }
 
         private void OnApplicationQuit()
         {
             _networkManager.Dispose();
-            _playerManager.Clear();
             StopServer();
         }
 
         private void OnDestroy()
         {
             _networkManager.Dispose();
-            _playerManager.Clear();
             StopServer();
         }
 
-        public void StartServer()
+        public void StartServer(int timeout, int afkTimeout)
         {
             _isRunning = true;
             _networkManager.StartServer(ServerPort);
+            _networkManager.TimeOut = timeout;
+            _networkManager.InactivityTimeout = afkTimeout;
             _networkManager.OnDispose += StopServer;
             ConsoleMessages.Log($"Server started on port {ServerPort}");
         }
@@ -82,7 +81,7 @@ namespace Network.Server
 
             _isRunning = false;
 
-            if (_serverThread == null || !_serverThread.IsAlive) return;
+            if (_serverThread is not { IsAlive: true }) return;
             if (_serverThread.Join(1000)) return;
             Debug.LogWarning("Server thread did not terminate gracefully, aborting");
             try

@@ -2,6 +2,7 @@
 using MultiplayerLib.Game.Model;
 using System;
 using MultiplayerLib.Game;
+using MultiplayerLib.Network.ClientDir;
 using UnityEngine;
 
 namespace Game
@@ -141,11 +142,11 @@ namespace Game
             return result;
         }
 
-        public override void HandleRemoteAction(GameAction action)
+        public void HandleRemoteAction(PlayerInput action)
         {
             base.HandleRemoteAction(action);
 
-            switch (action.Type)
+            switch (action.ActionType)
             {
                 case GameActionType.UnitMove:
                     _unityView.UpdateEntityPosition(action.SourceEntityId, action.TargetX, action.TargetY);
