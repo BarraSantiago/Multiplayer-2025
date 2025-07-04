@@ -46,7 +46,7 @@ namespace Network.Server
             {
                 if (testDone) return;
                 testDone = true;
-                _networkManager.test.HelloMessage();
+                _networkManager.test.ImportantArray[3] += 1;
                 ConsoleMessages.Log("Test fields modified successfully.");
             }
             else
@@ -57,7 +57,7 @@ namespace Network.Server
             {
                 if (testDone) return;
                 testDone = true;
-                _networkManager.test.HelloMessage2(testMessage);
+                _networkManager.test.ImportantArray = new int[_networkManager.test.ImportantArray.Length+1];
                 testMessage = " Mod" + testMessage;
                 ConsoleMessages.Log("Test fields modified successfully.");
             }
