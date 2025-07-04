@@ -46,7 +46,18 @@ namespace Network.Server
             {
                 if (testDone) return;
                 testDone = true;
-                _networkManager.test.ModifyNestedFields();
+                _networkManager.test.NestedTest.NestedTest.CriticalField *= 10;
+                ConsoleMessages.Log("Test fields modified successfully.");
+            }
+            else
+            {
+                testDone = false;
+            }
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                if (testDone) return;
+                testDone = true;
+                _networkManager.test.NestedTest2.ImportantField += " Mod";
                 ConsoleMessages.Log("Test fields modified successfully.");
             }
             else
