@@ -18,7 +18,7 @@ namespace Network.Server
         private Thread _serverThread;
         private bool _isRunning;
         private bool testDone = false;
-
+        private string testMessage = " Mod";
         private void Awake()
         {
             UnityConsoleMessages.Initialize();
@@ -42,22 +42,23 @@ namespace Network.Server
         private void Update()
         {
             _networkManager.Tick();
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.F1))
             {
                 if (testDone) return;
                 testDone = true;
-                _networkManager.test.NestedTest.NestedTest.CriticalField *= 10;
+                _networkManager.test.HelloMessage();
                 ConsoleMessages.Log("Test fields modified successfully.");
             }
             else
             {
                 testDone = false;
             }
-            if (Input.GetKeyDown(KeyCode.Z))
+            if (Input.GetKeyDown(KeyCode.F2))
             {
                 if (testDone) return;
                 testDone = true;
-                _networkManager.test.NestedTest2.ImportantField += " Mod";
+                _networkManager.test.HelloMessage2(testMessage);
+                testMessage = " Mod" + testMessage;
                 ConsoleMessages.Log("Test fields modified successfully.");
             }
             else
