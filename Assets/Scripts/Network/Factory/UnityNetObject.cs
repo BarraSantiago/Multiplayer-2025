@@ -7,16 +7,7 @@ namespace Network.Factory
     {
         public INetworkObject NetworkObject { get; set; }
         private readonly float _positionThreshold = 0.001f;
-
-        private void Update()
-        {
-            Vector3 vector3 = transform.position;
-            vector3.x = NetworkObject.X;
-            transform.position = vector3;
-            Vector3 position = transform.position;
-            position.y = NetworkObject.Y;
-            transform.position = position;
-        }
+        
 
         private System.Numerics.Vector3 ConvertToSystemVector3(Vector3 unityVec)
         {
