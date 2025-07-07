@@ -66,7 +66,7 @@ namespace Network.Factory
                     return;
                 }
 
-                if (_unityView == null) return;
+                if (!_unityView) return;
                 GameObject instance = _unityView.SpawnEntity(netObject as NetEntity, prefab);
                 UnityNetObject unityNetObj = instance.AddComponent<UnityNetObject>();
                 
@@ -80,8 +80,8 @@ namespace Network.Factory
                 if (!_owner._unityObjects.TryGetValue(id, out UnityNetObject unityNetObj)) return;
                 unityNetObj.transform.position = new UnityEngine.Vector3(position.X, position.Y, position.Z);
                 INetworkObject netObj = unityNetObj.NetworkObject;
-                netObj.X = position.X;
-                netObj.Y = position.Y;
+                netObj.X = (int)position.X;
+                netObj.Y = (int)position.Y;
             }
 
             protected override void RemoveNetworkObject(int networkId)

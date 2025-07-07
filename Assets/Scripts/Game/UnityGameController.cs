@@ -9,20 +9,19 @@ namespace Game
 {
     public class UnityGameController : GameController
     {
-        private UnityView _unityView;
+        private UnityView _view;
         private Camera _mainCamera;
         private LayerMask _entityLayerMask;
         private LayerMask _tileLayerMask;
+        private const int GridSize = 30;
 
-        public UnityGameController(GameManager gameManager, FactionType localFaction, UnityView unityView)
-            : base(gameManager, localFaction)
+        public UnityGameController(UnityView view, GameManager manager, FactionType faction) : base(faction, manager)
         {
-            _unityView = unityView;
+            _view = view;
             _mainCamera = Camera.main;
             _entityLayerMask = LayerMask.GetMask("Entity");
             _tileLayerMask = LayerMask.GetMask("Tile");
 
-            // Subscribe to events
             OnUnitSelected += HandleUnitSelected;
             OnEntityDamaged += HandleEntityDamaged;
             OnTurnChanged += HandleTurnChanged;
@@ -36,9 +35,6 @@ namespace Game
 
         private void HandleInput()
         {
-            if (!IsLocalPlayerTurn)
-                return;
-
             // Handle unit selection with left click
             if (Input.GetMouseButtonDown(0))
             {
@@ -46,8 +42,8 @@ namespace Game
                 if (Physics.Raycast(ray, out RaycastHit hit, 100f, _entityLayerMask))
                 {
                     EntityVisual entityVisual = hit.collider.GetComponent<EntityVisual>();
-                    if (entityVisual != null && entityVisual.GetEntity() is InfantryUnit unit
-                                             && (FactionType)unit.FactionId == LocalPlayerFaction)
+                    if (entityVisual && entityVisual.GetEntity() is InfantryUnit unit
+                                     && (FactionType)unit.FactionId == LocalPlayerFaction)
                     {
                         SelectUnit(unit);
                     }
@@ -63,8 +59,8 @@ namespace Game
                 if (Physics.Raycast(ray, out RaycastHit entityHit, 100f, _entityLayerMask))
                 {
                     EntityVisual entityVisual = entityHit.collider.GetComponent<EntityVisual>();
-                    if (entityVisual != null && entityVisual.GetEntity() is NetEntity entity
-                                             && (FactionType)entity.FactionId != LocalPlayerFaction)
+                    if (entityVisual && entityVisual.GetEntity() is NetEntity entity
+                                     && (FactionType)entity.FactionId != LocalPlayerFaction)
                     {
                         AttackTarget(entity);
                     }
@@ -87,8 +83,8 @@ namespace Game
 
         private Vector2Int WorldToGridPosition(Vector3 worldPosition)
         {
-            float gridSize = GameManager.GridSize;
-            float tileSize = _unityView.TileSize;
+            float gridSize = GridSize;
+            float tileSize = _view.TileSize;
 
             float startX = -(gridSize * tileSize) / 2;
             float startZ = -(gridSize * tileSize) / 2;
@@ -103,7 +99,7 @@ namespace Game
         private void HandleUnitSelected(InfantryUnit unit)
         {
             // Visual feedback for selected unit
-            _unityView.HighlightSelectedUnit(unit.NetworkId);
+            _view.HighlightSelectedUnit(unit.NetworkId);
         }
 
         private void HandleEntityDamaged(NetEntity entity)
@@ -111,35 +107,25 @@ namespace Game
             // Visual update for the damaged entity
             if (entity.Hp <= 0)
             {
-                _unityView.RemoveEntity(entity.NetworkId);
+                _view.RemoveEntity(entity.NetworkId);
             }
             else
             {
-                _unityView.UpdateEntityHealth(entity.NetworkId, entity.Hp);
+                _view.UpdateEntityHealth(entity.NetworkId, entity.Hp);
             }
         }
 
         private void HandleTurnChanged(FactionType newTurn)
         {
             // Update UI for turn change
-            _unityView.UpdateUI();
+            _view.UpdateUI();
             SelectedUnit = null;
-            _unityView.ClearHighlights();
+            _view.ClearHighlights();
         }
 
         private void HandleGameOver(FactionType winner)
         {
-            _unityView.ShowGameOver(winner);
-        }
-
-        public override bool MoveSelectedUnit(int targetX, int targetY)
-        {
-            bool result = base.MoveSelectedUnit(targetX, targetY);
-
-            if (result)
-                _unityView.UpdateEntityPosition(SelectedUnit.NetworkId, targetX, targetY);
-
-            return result;
+            _view.ShowGameOver(winner);
         }
 
         public void HandleRemoteAction(PlayerInput action)
@@ -149,7 +135,7 @@ namespace Game
             switch (action.ActionType)
             {
                 case GameActionType.UnitMove:
-                    _unityView.UpdateEntityPosition(action.SourceEntityId, action.TargetX, action.TargetY);
+                    _view.UpdateEntityPosition(action.SourceEntityId, action.TargetX, action.TargetY);
                     break;
 
                 case GameActionType.UnitAttack:

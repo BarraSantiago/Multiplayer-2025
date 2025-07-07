@@ -167,9 +167,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unityView: {fileID: 0}
   registeredPrefabs:
-  - {fileID: 256864484462788253, guid: f2ff0abf5115678499af0cd367990497, type: 3}
-  - {fileID: 5244531302253822717, guid: 87e1900007bf7764a80701707b2d1111, type: 3}
-  - {fileID: 256864484462788253, guid: f2ff0abf5115678499af0cd367990497, type: 3}
+  - {fileID: 177033343429717943, guid: 708a19fedd7c46241a4f5454cc6f430f, type: 3}
+  - {fileID: 177033343429717943, guid: 45c8c57e889154740b87c2b77a91434d, type: 3}
+  - {fileID: 5606641665315884433, guid: 9172d367c2df2ef418779eaf0c44a860, type: 3}
+  - {fileID: 1147594271148490845, guid: 77bfa840831568a419952d2cacb1bc0c, type: 3}
+  - {fileID: 2353044441732194907, guid: 73c05a5b0fc2e944aa864f8fb388a11d, type: 3}
 --- !u!114 &180350413
 MonoBehaviour:
   m_ObjectHideFlags: 0

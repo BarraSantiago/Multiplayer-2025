@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MultiplayerLib.Game;
 using MultiplayerLib.Game.Model;
 using TMPro;
@@ -32,6 +33,21 @@ namespace Game
         private GameObject[,] gridTiles;
         public float TileSize => tileSize;
 
+        private void Start()
+        {
+            CreateGrid();
+            NetEntity.OnEntityPositionUpdate += UpdateEntityPosition;
+        }
+
+        private void OnDestroy()
+        {
+            NetEntity.OnEntityPositionUpdate -= UpdateEntityPosition;
+            foreach (GameObject obj in entityObjects.Values)
+            {
+                Destroy(obj);
+            }
+            entityObjects.Clear();
+        }
         public void Initialize()
         {
             CreateGrid();

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Game;
+using MultiplayerLib.Game.Model;
 using MultiplayerLib.Network.ClientDir;
 using MultiplayerLib.Network.interfaces;
 using TMPro;
@@ -9,24 +10,28 @@ namespace Network.ClientDir
 {
     public class UnityClientManager : MonoBehaviour
     {
-        [Header("Connection Settings")]
-        [SerializeField] private string serverIp = "127.0.0.1";
+        [Header("Connection Settings")] [SerializeField]
+        private string serverIp = "127.0.0.1";
+
         [SerializeField] private int serverPort = 12346;
         [SerializeField] private bool ConnectToMatchmaker = false;
         [SerializeField] private int Timeout = 120;
-        [Header("Player Settings")] 
-        [SerializeField] private string playerName = "Player";
+
+        [Header("Player Settings")] [SerializeField]
+        private string playerName = "Player";
+
         [SerializeField] private int playerColor = 0;
         [SerializeField] private TMP_Text heartbeatText;
         [SerializeField] private GameResult gameResult;
         [SerializeField] private TMP_Text pingBroadcastText;
+        [SerializeField] private Player player;
 
         public ClientNetworkManager _networkManager;
         public ClientNetworkManager NetworkManager => _networkManager;
         public bool IsConnected { get; private set; }
-        
+
         private ClientMessageDispatcher _messageDispatcher;
-        
+
         private void Awake()
         {
             UnityConsoleMessages.Initialize();
@@ -39,6 +44,7 @@ namespace Network.ClientDir
             _networkManager.ServerTimeout = Timeout;
             _networkManager.Init();
             ClientMessageDispatcher.OnGameEnd += gameResult.OnGameResult;
+            player.SetGameManager(_messageDispatcher.GameManager);
         }
 
 

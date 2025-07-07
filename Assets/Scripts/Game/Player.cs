@@ -11,26 +11,26 @@ namespace Game
         [SerializeField] private UnityView unityView;
         [SerializeField] private FactionType playerFaction = FactionType.Red;
 
-        private GameManager gameManager;
+        public GameManager gameManager;
         private UnityGameController gameController;
-        private NetworkObjectTracker _mapper = new NetworkObjectTracker();
+
         private void Start()
         {
             //gameManager = new GameManager(NetworkObjectFactory.Instance);
             //unityView.Initialize();
-            //gameController = new UnityGameController(gameManager, playerFaction, unityView);
+
             //_mapper.RegisterObject(gameManager, 0);
+        }
+
+        public void SetGameManager(GameManager manager)
+        {
+            gameManager = manager;
+            gameController = new UnityGameController(unityView, manager, FactionType.Red);
         }
 
         private void Update()
         {
             gameController?.Update();
-
-            List<byte[]> changes = _mapper.CheckForChanges();
-            if (changes.Count > 0)
-            {
-                Debug.Log(changes.Count);
-            }
         }
     }
 }

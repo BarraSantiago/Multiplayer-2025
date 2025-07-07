@@ -29,7 +29,6 @@ namespace Network.Server
             _networkManager._messageDispatcher = _messageDispatcher;
             _networkManager.Init(ref _messageDispatcher.OnNewClient);
 
-            // Uncomment and use proper values
             if (MatchmakerEndpoint != null)
             {
                 _networkManager.SetMatchmakerInfo(MatchmakerEndpoint.Address, MatchmakerEndpoint.Port, ServerId);
