@@ -1875,9 +1875,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1864314293}
-        m_TargetAssemblyTypeName: Network.NetworkManager, Assembly-CSharp
-        m_MethodName: 
+      - m_Target: {fileID: 1864314294}
+        m_TargetAssemblyTypeName: Network.ClientDir.UnityClientManager, Assembly-CSharp
+        m_MethodName: DisconnectFromServer
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4702,7 +4702,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unityView: {fileID: 956055324}
-  playerFaction: 1
 --- !u!4 &1786148830
 Transform:
   m_ObjectHideFlags: 0
@@ -4845,6 +4844,7 @@ MonoBehaviour:
   - {fileID: 5606641665315884433, guid: 9172d367c2df2ef418779eaf0c44a860, type: 3}
   - {fileID: 1147594271148490845, guid: 77bfa840831568a419952d2cacb1bc0c, type: 3}
   - {fileID: 2353044441732194907, guid: 73c05a5b0fc2e944aa864f8fb388a11d, type: 3}
+  - {fileID: 5244531302253822717, guid: 87e1900007bf7764a80701707b2d1111, type: 3}
 --- !u!4 &1864314296
 Transform:
   m_ObjectHideFlags: 0

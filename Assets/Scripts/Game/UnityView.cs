@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MultiplayerLib.Game;
 using MultiplayerLib.Game.Model;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
 
 namespace Game
@@ -142,7 +140,6 @@ namespace Game
             }*/
         }
 
-        // Call this when an entity moves
         public void UpdateEntityPosition(int networkId, int newX, int newY)
         {
             if (entityObjects.TryGetValue(networkId, out GameObject obj))
@@ -151,7 +148,6 @@ namespace Game
             }
         }
 
-        // Call this when an entity is removed
         public void RemoveEntity(int networkId)
         {
             if (!entityObjects.TryGetValue(networkId, out GameObject obj)) return;

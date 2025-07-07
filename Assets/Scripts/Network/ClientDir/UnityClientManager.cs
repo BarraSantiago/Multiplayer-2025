@@ -10,16 +10,14 @@ namespace Network.ClientDir
 {
     public class UnityClientManager : MonoBehaviour
     {
-        [Header("Connection Settings")] [SerializeField]
-        private string serverIp = "127.0.0.1";
-
+        [Header("Connection Settings")]
+        [SerializeField] private string serverIp = "127.0.0.1";
         [SerializeField] private int serverPort = 12346;
         [SerializeField] private bool ConnectToMatchmaker = false;
         [SerializeField] private int Timeout = 120;
 
-        [Header("Player Settings")] [SerializeField]
-        private string playerName = "Player";
-
+        [Header("Player Settings")] 
+        [SerializeField] private string playerName = "Player";
         [SerializeField] private int playerColor = 0;
         [SerializeField] private TMP_Text heartbeatText;
         [SerializeField] private GameResult gameResult;
@@ -84,6 +82,7 @@ namespace Network.ClientDir
             _networkManager.Dispose();
             IsConnected = false;
             Debug.Log("Disconnected from server");
+            Application.Quit();
         }
     }
 }

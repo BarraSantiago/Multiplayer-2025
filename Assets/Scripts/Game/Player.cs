@@ -9,7 +9,6 @@ namespace Game
     public class Player : MonoBehaviour
     {
         [SerializeField] private UnityView unityView;
-        [SerializeField] private FactionType playerFaction = FactionType.Red;
 
         public GameManager gameManager;
         private UnityGameController gameController;

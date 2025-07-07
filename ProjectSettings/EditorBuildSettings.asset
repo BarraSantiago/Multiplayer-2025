@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/ServerScene.unity
     guid: 6655de704b21e2a4390bc4cb2bc0ed97
   - enabled: 1
-    path: Assets/Scenes/ClientScene.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
+    path: Assets/Scenes/Game2.unity
+    guid: ac29b29f3e91f934e80fd4be7daf12d1
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
