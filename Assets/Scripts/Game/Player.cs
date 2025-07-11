@@ -10,20 +10,10 @@ namespace Game
     {
         [SerializeField] private UnityView unityView;
 
-        public GameManager gameManager;
         private UnityGameController gameController;
-
-        private void Start()
-        {
-            //gameManager = new GameManager(NetworkObjectFactory.Instance);
-            //unityView.Initialize();
-
-            //_mapper.RegisterObject(gameManager, 0);
-        }
 
         public void SetGameManager(GameManager manager)
         {
-            gameManager = manager;
             gameController = new UnityGameController(unityView, manager, FactionType.Red);
         }
 

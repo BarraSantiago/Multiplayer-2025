@@ -35,7 +35,6 @@ namespace Game
 
         private void HandleInput()
         {
-            // Handle unit selection with left click
             if (Input.GetMouseButtonDown(0))
             {
                 Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -50,12 +49,10 @@ namespace Game
                 }
             }
 
-            // Handle movement or attack with right click
             if (Input.GetMouseButtonDown(1) && SelectedUnit != null)
             {
                 Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
 
-                // Check if clicked on an entity (potential attack)
                 if (Physics.Raycast(ray, out RaycastHit entityHit, 100f, _entityLayerMask))
                 {
                     EntityVisual entityVisual = entityHit.collider.GetComponent<EntityVisual>();
@@ -65,7 +62,6 @@ namespace Game
                         AttackTarget(entity);
                     }
                 }
-                // Check if clicked on a tile (movement)
                 else if (Physics.Raycast(ray, out RaycastHit tileHit, 100f, _tileLayerMask))
                 {
                     Vector3 worldPos = tileHit.point;
@@ -74,7 +70,6 @@ namespace Game
                 }
             }
 
-            // End turn with spacebar
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EndTurn();
@@ -95,16 +90,14 @@ namespace Game
             return new Vector2Int(x, y);
         }
 
-        // Event handlers
         private void HandleUnitSelected(InfantryUnit unit)
         {
-            // Visual feedback for selected unit
+            _view.ClearHighlights();
             _view.HighlightSelectedUnit(unit.NetworkId);
         }
 
         private void HandleEntityDamaged(NetEntity entity)
         {
-            // Visual update for the damaged entity
             if (entity.Hp <= 0)
             {
                 _view.RemoveEntity(entity.NetworkId);
@@ -117,7 +110,6 @@ namespace Game
 
         private void HandleTurnChanged(FactionType newTurn)
         {
-            // Update UI for turn change
             _view.UpdateUI();
             SelectedUnit = null;
             _view.ClearHighlights();
@@ -139,11 +131,9 @@ namespace Game
                     break;
 
                 case GameActionType.UnitAttack:
-                    // The view will be updated via the OnEntityDamaged event
                     break;
 
                 case GameActionType.EndTurn:
-                    // The view will be updated via the OnTurnChanged event
                     break;
             }
         }

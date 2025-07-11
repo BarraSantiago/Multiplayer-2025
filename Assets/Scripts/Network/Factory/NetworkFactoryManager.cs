@@ -27,6 +27,16 @@ namespace Network.Factory
             RegisterPrefabs();
         }
         
+        [ContextMenu("Create Network Object")]
+        public void CreateNetworkObject()
+        {
+            INetworkObject networkObject = _factory.CreateNetworkObject(Vector3.One, NetObjectTypes.BlueInfantryUnit, 0, 0, true);
+            if (networkObject == null) return;
+
+            _factory.CreateGameObject(networkObject, true);
+            networkObject.Initialize(networkObject.NetworkId, 0, true, NetObjectTypes.BlueInfantryUnit);
+        }
+        
         private void RegisterPrefabs()
         {
             NetObjectTypes[] netObjTypes = (NetObjectTypes[])Enum.GetValues(typeof(NetObjectTypes));

@@ -2,7 +2,6 @@
 
 namespace Game
 {
-    // Replace the editor Highlighter with our custom component
     public class UnitHighlighter : MonoBehaviour
     {
         [SerializeField] private Color highlightColor = Color.yellow;
