@@ -1,7 +1,6 @@
 ﻿using System.Net;
+using AuthClient.Network.ClientDir;
 using Game;
-using MultiplayerLib.Game.Model;
-using MultiplayerLib.Network.ClientDir;
 using MultiplayerLib.Network.interfaces;
 using TMPro;
 using UnityEngine;
@@ -22,26 +21,25 @@ namespace Network.ClientDir
         [SerializeField] private TMP_Text heartbeatText;
         [SerializeField] private GameResult gameResult;
         [SerializeField] private TMP_Text pingBroadcastText;
-        [SerializeField] private Player player;
+        [SerializeField] private ACPlayer player;
 
-        public ClientNetworkManager _networkManager;
-        public ClientNetworkManager NetworkManager => _networkManager;
+        public ACClientNetworkManager _networkManager;
         public bool IsConnected { get; private set; }
 
-        private ClientMessageDispatcher _messageDispatcher;
+        private ACClientMessageDispatcher _messageDispatcher;
 
         private void Awake()
         {
             UnityConsoleMessages.Initialize();
-            _networkManager = new ClientNetworkManager();
-            ClientNetworkManager.SetInstance(_networkManager);
+            _networkManager = new ACClientNetworkManager();
+            ACClientNetworkManager.SetInstance(_networkManager);
 
-            _messageDispatcher = new ClientMessageDispatcher();
+            _messageDispatcher = new ACClientMessageDispatcher();
             BaseMessageDispatcher.OnPingBroadcast += (ping) => { pingBroadcastText.text = ping; };
             _networkManager._messageDispatcher = _messageDispatcher;
             _networkManager.ServerTimeout = Timeout;
             _networkManager.Init();
-            ClientMessageDispatcher.OnGameEnd += gameResult.OnGameResult;
+            ACClientMessageDispatcher.OnGameEnd += gameResult.OnGameResult;
             player.SetGameManager(_messageDispatcher.GameManager);
         }
 

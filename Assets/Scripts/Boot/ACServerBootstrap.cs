@@ -7,11 +7,11 @@ using UnityEngine;
 
 namespace Boot
 {
-    public class GameServerBootstrap : MonoBehaviour
+    public class ACServerBootstrap : MonoBehaviour
     {
         [SerializeField] private int defaultPort = 12346;
         [SerializeField] private int disconnectionTimeout = 30; 
-        [SerializeField] private int afkTimeout = 60;
+        [SerializeField] private int afkTimeout = 60; 
         private void Awake()
         {
             int port = defaultPort;
@@ -67,10 +67,8 @@ namespace Boot
                 PlayerPrefs.SetInt("MatchmakerPort", matchmakerPort);
                 PlayerPrefs.Save();
 
-                UnityServerManager serverManager;
-                
                 GameObject serverObj = new GameObject("ServerManager");
-                serverManager = serverObj.AddComponent<UnityServerManager>();
+                ACServer serverManager = serverObj.AddComponent<ACServer>();
 
                 serverManager.ServerPort = port;
                 serverManager.ServerId = serverId;

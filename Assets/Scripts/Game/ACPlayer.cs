@@ -3,15 +3,15 @@ using UnityEngine;
 
 namespace Game
 {
-    public class Player : MonoBehaviour
+    public class ACPlayer : MonoBehaviour
     {
         [SerializeField] private UnityView unityView;
 
-        private UnityGameController gameController;
+        private ACGameController gameController;
 
         public void SetGameManager(GameManager manager)
         {
-            gameController = new UnityGameController(unityView, manager, FactionType.Red);
+            gameController = new ACGameController(unityView, manager, FactionType.Red);
         }
 
         private void Update()

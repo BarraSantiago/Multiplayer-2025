@@ -4,7 +4,7 @@ namespace Game
 {
     public class UnitHighlighter : MonoBehaviour
     {
-        [SerializeField] private Color highlightColor = Color.yellow;
+        [SerializeField] private Color highlightColor = Color.black;
         private Material[] originalMaterials;
         private Renderer[] renderers;
         private bool isHighlighted = false;

@@ -10,7 +10,7 @@ namespace Game
 
         public void UpdateHealthBar(int currentHealth, int maxHealth)
         {
-            if (healthFill == null)
+            if (!healthFill)
                 return;
 
             float healthPercentage = Mathf.Clamp01((float)currentHealth / maxHealth);

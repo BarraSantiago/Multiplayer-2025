@@ -130,7 +130,7 @@ GameObject:
   m_Component:
   - component: {fileID: 180350410}
   - component: {fileID: 180350412}
-  - component: {fileID: 180350413}
+  - component: {fileID: 180350411}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -153,7 +153,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &180350412
+--- !u!114 &180350411
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -162,7 +162,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 180350408}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adb071f4ada04458a2b29111068a0077, type: 3}
+  m_Script: {fileID: 11500000, guid: 2db58247f49b400fa5828bef57afe19c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   unityView: {fileID: 0}
@@ -173,7 +173,7 @@ MonoBehaviour:
   - {fileID: 1147594271148490845, guid: 77bfa840831568a419952d2cacb1bc0c, type: 3}
   - {fileID: 2353044441732194907, guid: 73c05a5b0fc2e944aa864f8fb388a11d, type: 3}
   - {fileID: 5244531302253822717, guid: 87e1900007bf7764a80701707b2d1111, type: 3}
---- !u!114 &180350413
+--- !u!114 &180350412
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -182,12 +182,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 180350408}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f82405ac58743cbb31a27b9cf071ecd, type: 3}
+  m_Script: {fileID: 11500000, guid: 930e2d5256b646e998c05c75c1d97dc7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   defaultPort: 12346
-  disconnectionTimeout: 120
-  afkTimeout: 120
+  disconnectionTimeout: 30
+  afkTimeout: 60
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0

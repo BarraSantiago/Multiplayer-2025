@@ -6,8 +6,8 @@ namespace Game
 {
     public class EntityVisual : MonoBehaviour
     {
-        private NetEntity entity;
         [SerializeField] private GameObject healthBarPrefab;
+        private NetEntity entity;
         private GameObject healthBarInstance;
         private HealthBar healthBar;
 
@@ -21,7 +21,6 @@ namespace Game
 
         public void UpdateVisuals()
         {
-            // Create health bar if needed
             if (!healthBarInstance && healthBarPrefab)
             {
                 healthBarInstance = Instantiate(healthBarPrefab, transform);
@@ -34,8 +33,7 @@ namespace Game
 
         public void UpdateHealth(int currentHealth)
         {
-            // Update health bar
-            if (healthBar == null) return;
+            if (!healthBar) return;
             int maxHealth = entity is Castle ? 100 : 50;
             healthBar.UpdateHealthBar(currentHealth, maxHealth);
         }

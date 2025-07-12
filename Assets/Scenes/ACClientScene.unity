@@ -1875,8 +1875,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1864314294}
-        m_TargetAssemblyTypeName: Network.ClientDir.UnityClientManager, Assembly-CSharp
+      - m_Target: {fileID: 1864314297}
+        m_TargetAssemblyTypeName: Network.ClientDir.ACClient, Assembly-CSharp
         m_MethodName: DisconnectFromServer
         m_Mode: 1
         m_Arguments:
@@ -4681,7 +4681,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1786148830}
-  - component: {fileID: 1786148829}
+  - component: {fileID: 1786148831}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -4689,19 +4689,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1786148829
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1786148828}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0c29ced81a84d6cb9774f2507bf957f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  unityView: {fileID: 956055324}
 --- !u!4 &1786148830
 Transform:
   m_ObjectHideFlags: 0
@@ -4717,6 +4704,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1786148831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1786148828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52228c77cad14189b613d2d6c3e2399a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unityView: {fileID: 956055324}
 --- !u!1 &1855439190
 GameObject:
   m_ObjectHideFlags: 0
@@ -4794,8 +4794,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1864314296}
-  - component: {fileID: 1864314295}
-  - component: {fileID: 1864314294}
+  - component: {fileID: 1864314297}
+  - component: {fileID: 1864314298}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -4803,48 +4803,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1864314294
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1864314293}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b199f579800466c97e422bcfd1ad0e0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  serverIp: 127.0.0.1
-  serverPort: 12346
-  ConnectToMatchmaker: 0
-  Timeout: 120
-  playerName: Player
-  playerColor: 0
-  heartbeatText: {fileID: 728132985}
-  gameResult: {fileID: 407954818}
-  pingBroadcastText: {fileID: 1407521845}
-  player: {fileID: 1786148829}
---- !u!114 &1864314295
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1864314293}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adb071f4ada04458a2b29111068a0077, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  unityView: {fileID: 956055324}
-  registeredPrefabs:
-  - {fileID: 177033343429717943, guid: 708a19fedd7c46241a4f5454cc6f430f, type: 3}
-  - {fileID: 177033343429717943, guid: 45c8c57e889154740b87c2b77a91434d, type: 3}
-  - {fileID: 5606641665315884433, guid: 9172d367c2df2ef418779eaf0c44a860, type: 3}
-  - {fileID: 1147594271148490845, guid: 77bfa840831568a419952d2cacb1bc0c, type: 3}
-  - {fileID: 2353044441732194907, guid: 73c05a5b0fc2e944aa864f8fb388a11d, type: 3}
-  - {fileID: 5244531302253822717, guid: 87e1900007bf7764a80701707b2d1111, type: 3}
 --- !u!4 &1864314296
 Transform:
   m_ObjectHideFlags: 0
@@ -4860,6 +4818,48 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1864314297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1864314293}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae33aa3c07d44104b9dbe5a14a492a3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serverIp: 127.0.0.1
+  serverPort: 12346
+  ConnectToMatchmaker: 0
+  Timeout: 120
+  playerName: Player
+  playerColor: 0
+  heartbeatText: {fileID: 728132985}
+  gameResult: {fileID: 407954818}
+  pingBroadcastText: {fileID: 1407521845}
+  player: {fileID: 1786148831}
+--- !u!114 &1864314298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1864314293}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2db58247f49b400fa5828bef57afe19c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unityView: {fileID: 956055324}
+  registeredPrefabs:
+  - {fileID: 177033343429717943, guid: 708a19fedd7c46241a4f5454cc6f430f, type: 3}
+  - {fileID: 177033343429717943, guid: 45c8c57e889154740b87c2b77a91434d, type: 3}
+  - {fileID: 5606641665315884433, guid: 9172d367c2df2ef418779eaf0c44a860, type: 3}
+  - {fileID: 1147594271148490845, guid: 77bfa840831568a419952d2cacb1bc0c, type: 3}
+  - {fileID: 2353044441732194907, guid: 73c05a5b0fc2e944aa864f8fb388a11d, type: 3}
+  - {fileID: 5244531302253822717, guid: 87e1900007bf7764a80701707b2d1111, type: 3}
 --- !u!1 &1876931357
 GameObject:
   m_ObjectHideFlags: 0
