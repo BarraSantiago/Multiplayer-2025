@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using AuthClient.Game.Model;
 using AuthClient.Network.ClientDir;
 using Game;
 using MultiplayerLib.Network.interfaces;
@@ -38,17 +39,18 @@ namespace Network.ClientDir
             _networkManager._messageDispatcher = _messageDispatcher; 
             _networkManager.ServerTimeout = Timeout;
             _networkManager.Init();
-            BaseMessageDispatcher.OnPingBroadcast += (ping) => { pingBroadcastText.text = ping; };
+            AbstractMessageDispatcher.OnPingBroadcast += (ping) => { pingBroadcastText.text = ping; };
             ACClientMessageDispatcher.OnGameEnd += gameResult.OnGameResult;
             ACClientMessageDispatcher.OnHandshakeComplete += SetManager;
             
         }
 
-        private void SetManager()
+        private void SetManager(ACGameManager gameManager)
         {
-            player.SetGameManager(_messageDispatcher.GameManager);
+            player.SetGameManager(gameManager);
             _networkManager.Initialized = true;
         }
+        
 
 
         public void ConnectToServer(IPAddress ip, int port, string pName, int color)
@@ -85,7 +87,7 @@ namespace Network.ClientDir
         public void DisconnectFromServer()
         {
             if (!IsConnected) return;
-            BaseMessageDispatcher.OnPingBroadcast -= (ping) => { pingBroadcastText.text = ping; };
+            AbstractMessageDispatcher.OnPingBroadcast -= (ping) => { pingBroadcastText.text = ping; };
             ACClientMessageDispatcher.OnGameEnd -= gameResult.OnGameResult;
             ACClientMessageDispatcher.OnHandshakeComplete -= SetManager;
             _networkManager.Dispose();

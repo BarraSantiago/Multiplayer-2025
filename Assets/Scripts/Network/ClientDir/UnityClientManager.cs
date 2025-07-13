@@ -37,7 +37,7 @@ namespace Network.ClientDir
             ClientNetworkManager.SetInstance(_networkManager);
 
             _messageDispatcher = new ClientMessageDispatcher();
-            BaseMessageDispatcher.OnPingBroadcast += (ping) => { pingBroadcastText.text = ping; };
+            AbstractMessageDispatcher.OnPingBroadcast += (ping) => { pingBroadcastText.text = ping; };
             _networkManager._messageDispatcher = _messageDispatcher;
             _networkManager.ServerTimeout = Timeout;
             _networkManager.Init();
