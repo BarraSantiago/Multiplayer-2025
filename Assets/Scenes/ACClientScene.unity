@@ -652,7 +652,7 @@ GameObject:
   - component: {fileID: 171936697}
   - component: {fileID: 171936700}
   - component: {fileID: 171936699}
-  - component: {fileID: 171936698}
+  - component: {fileID: 171936701}
   m_Layer: 5
   m_Name: NetworkScreen
   m_TagString: Untagged
@@ -684,25 +684,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &171936698
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 171936696}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 469f1a9b4f41d0a4d96c6aa2ceeaa38b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  chatScreen: {fileID: 1497116047}
-  ColorSelector: {fileID: 1765188802}
-  PlayerNameInput: {fileID: 80178494}
-  connectBtn: {fileID: 1137233429}
-  disconnectBtn: {fileID: 940031316}
-  portInputField: {fileID: 1016861025}
-  addressInputField: {fileID: 1458925266}
 --- !u!114 &171936699
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -741,6 +722,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 171936696}
   m_CullTransparentMesh: 0
+--- !u!114 &171936701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171936696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cecc742e05f1486cb5cedbbc40c931ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chatScreen: {fileID: 1497116047}
+  ColorSelector: {fileID: 1765188802}
+  PlayerNameInput: {fileID: 80178494}
+  connectBtn: {fileID: 1137233429}
+  disconnectBtn: {fileID: 940031316}
+  portInputField: {fileID: 1016861025}
+  addressInputField: {fileID: 1458925266}
 --- !u!1 &407954817
 GameObject:
   m_ObjectHideFlags: 0
@@ -4794,8 +4794,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1864314296}
-  - component: {fileID: 1864314297}
   - component: {fileID: 1864314298}
+  - component: {fileID: 1864314297}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged

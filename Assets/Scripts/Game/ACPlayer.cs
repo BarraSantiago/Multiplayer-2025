@@ -1,4 +1,5 @@
-﻿using MultiplayerLib.Game.Model;
+﻿using AuthClient.Game.Model;
+using MultiplayerLib.Game.Model;
 using UnityEngine;
 
 namespace Game
@@ -9,7 +10,7 @@ namespace Game
 
         private ACGameController gameController;
 
-        public void SetGameManager(GameManager manager)
+        public void SetGameManager(ACGameManager manager)
         {
             gameController = new ACGameController(unityView, manager, FactionType.Red);
         }

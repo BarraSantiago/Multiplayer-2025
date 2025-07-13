@@ -1,6 +1,7 @@
 ﻿using MultiplayerLib.Game.Controller;
 using MultiplayerLib.Game.Model;
 using System;
+using AuthClient.Game.Model;
 using MultiplayerLib.Game;
 using MultiplayerLib.Network.ClientDir;
 using UnityEngine;
@@ -15,7 +16,7 @@ namespace Game
         private LayerMask _tileLayerMask;
         private const int GridSize = 30;
 
-        public ACGameController(UnityView view, GameManager manager, FactionType faction) : base(faction, manager)
+        public ACGameController(UnityView view, ACGameManager manager, FactionType faction) : base(faction, manager)
         {
             _view = view;
             _mainCamera = Camera.main;

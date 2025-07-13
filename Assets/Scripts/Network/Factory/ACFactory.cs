@@ -22,7 +22,7 @@ namespace Network.Factory
         private void Awake()
         {
             _factory = new ACFactoryImplementation();
-            NetworkObjectFactory.SetInstance(_factory);
+            ACNetworkObjectFactory.SetInstance(_factory);
             _factory.Initialize(this, unityView);
             RegisterPrefabs();
         }

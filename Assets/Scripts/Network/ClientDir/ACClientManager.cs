@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Network.ClientDir
 {
-    public class ACClient : MonoBehaviour
+    public class ACClientManager : MonoBehaviour
     {
         [Header("Connection Settings")]
         [SerializeField] private string serverIp = "127.0.0.1";
@@ -28,25 +28,33 @@ namespace Network.ClientDir
 
         private ACClientMessageDispatcher _messageDispatcher;
 
-        private void Awake()
+        private void Start()
         {
             UnityConsoleMessages.Initialize();
             _networkManager = new ACClientNetworkManager();
             ACClientNetworkManager.SetInstance(_networkManager);
 
             _messageDispatcher = new ACClientMessageDispatcher();
-            BaseMessageDispatcher.OnPingBroadcast += (ping) => { pingBroadcastText.text = ping; };
-            _networkManager._messageDispatcher = _messageDispatcher;
+            _networkManager._messageDispatcher = _messageDispatcher; 
             _networkManager.ServerTimeout = Timeout;
             _networkManager.Init();
+            BaseMessageDispatcher.OnPingBroadcast += (ping) => { pingBroadcastText.text = ping; };
             ACClientMessageDispatcher.OnGameEnd += gameResult.OnGameResult;
+            ACClientMessageDispatcher.OnHandshakeComplete += SetManager;
+            
+        }
+
+        private void SetManager()
+        {
             player.SetGameManager(_messageDispatcher.GameManager);
+            _networkManager.Initialized = true;
         }
 
 
         public void ConnectToServer(IPAddress ip, int port, string pName, int color)
         {
             IsConnected = true;
+
             if (ConnectToMatchmaker)
             {
                 _networkManager.ConnectToMatchmaker(ip, port, pName, color);
@@ -77,6 +85,9 @@ namespace Network.ClientDir
         public void DisconnectFromServer()
         {
             if (!IsConnected) return;
+            BaseMessageDispatcher.OnPingBroadcast -= (ping) => { pingBroadcastText.text = ping; };
+            ACClientMessageDispatcher.OnGameEnd -= gameResult.OnGameResult;
+            ACClientMessageDispatcher.OnHandshakeComplete -= SetManager;
             _networkManager.Dispose();
             IsConnected = false;
             Debug.Log("Disconnected from server");
