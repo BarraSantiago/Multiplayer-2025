@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using AuthClient.Game.Model;
+using AuthClient.Network.ClientDir;
 using MultiplayerLib.Game;
 using MultiplayerLib.Game.Model;
 using TMPro;
@@ -30,11 +33,25 @@ namespace Game
         public Dictionary<int, GameObject> entityObjects = new Dictionary<int, GameObject>();
         private GameObject[,] gridTiles;
         public float TileSize => tileSize;
-
+        private ACGameManager gameManager;
         private void Start()
         {
             CreateGrid();
             NetEntity.OnEntityPositionUpdate += UpdateEntityPosition;
+            NetEntity.OnEntityHpUpdate += UpdateEntityHealth;
+            ACClientMessageDispatcher.OnHandshakeComplete += InitializeGameManager;
+        }
+
+        private void Update()
+        {
+            if (gameManager == null) return;
+
+            UpdateUI();
+        }
+
+        private void InitializeGameManager(ACGameManager arg1, FactionType arg2)
+        {
+            gameManager = arg1;
         }
 
         private void OnDestroy()
@@ -84,23 +101,7 @@ namespace Game
             }
 
             entityObjects.Clear();
-            /*
-            // Create castles
-            SpawnEntity(gameManager.RedCastle, redCastlePrefab);
-            SpawnEntity(gameManager.BlueCastle, blueCastlePrefab);
 
-            // Create infantry units
-            foreach (InfantryUnit unit in gameManager.RedUnits)
-            {
-                SpawnEntity(unit, redInfantryPrefab);
-            }
-
-            foreach (InfantryUnit unit in gameManager.BlueUnits)
-            {
-                SpawnEntity(unit, blueInfantryPrefab);
-            }*/
-
-            // Update UI
             UpdateUI();
         }
 
@@ -111,7 +112,7 @@ namespace Game
             entityObject.name = $"{entity.GetType().Name}_{entity.NetworkId}";
 
             // Add component to store entity data and update visual elements
-            EntityVisual visual = entityObject.AddComponent<EntityVisual>();
+            EntityVisual visual = entityObject.GetComponent<EntityVisual>();
             visual.SetEntity(entity);
 
             entityObjects[entity.NetworkId] = entityObject;
@@ -119,7 +120,7 @@ namespace Game
         }
 
         public void UpdateUI()
-        {/*
+        {
             if (turnText)
                 turnText.text = $"Turn: {gameManager.CurrentTurn}";
 
@@ -137,7 +138,7 @@ namespace Game
             if (winnerText && gameManager.GameOver)
             {
                 winnerText.text = $"{gameManager.Winner} faction wins!";
-            }*/
+            }
         }
 
         public void UpdateEntityPosition(int networkId, int newX, int newY)
@@ -151,8 +152,7 @@ namespace Game
         public void RemoveEntity(int networkId)
         {
             if (!entityObjects.TryGetValue(networkId, out GameObject obj)) return;
-            Destroy(obj);
-            entityObjects.Remove(networkId);
+            
         }
         
         public void HighlightSelectedUnit(int networkId)
@@ -166,6 +166,7 @@ namespace Game
         {
             foreach (GameObject obj in entityObjects.Values)
             {
+                if (!obj) continue;
                 UnitHighlighter highlighter = obj.GetComponent<UnitHighlighter>();
                 if (highlighter)
                     highlighter.RemoveHighlight();

@@ -74,6 +74,8 @@ namespace Game
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 EndTurn();
+                _view.ClearHighlights();
+                SelectedUnit = null;
             }
         }
 

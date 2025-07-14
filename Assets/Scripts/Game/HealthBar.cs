@@ -5,19 +5,17 @@ namespace Game
 {
     public class HealthBar : MonoBehaviour
     {
-        [SerializeField] private Image healthFill;
+        [SerializeField] private Slider healthSlider;
+        [SerializeField] private Image fillImage;
         [SerializeField] private Gradient healthGradient;
 
         public void UpdateHealthBar(int currentHealth, int maxHealth)
         {
-            if (!healthFill)
+            if (!healthSlider)
                 return;
 
-            float healthPercentage = Mathf.Clamp01((float)currentHealth / maxHealth);
-            healthFill.fillAmount = healthPercentage;
-            
-            if (healthGradient != null)
-                healthFill.color = healthGradient.Evaluate(healthPercentage);
+            healthSlider.maxValue = maxHealth;
+            healthSlider.value = currentHealth;
         }
     }
 }
