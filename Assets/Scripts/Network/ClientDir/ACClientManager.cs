@@ -2,6 +2,7 @@
 using AuthClient.Game.Model;
 using AuthClient.Network.ClientDir;
 using Game;
+using MultiplayerLib.Game.Model;
 using MultiplayerLib.Network.interfaces;
 using TMPro;
 using UnityEngine;
@@ -10,14 +11,16 @@ namespace Network.ClientDir
 {
     public class ACClientManager : MonoBehaviour
     {
-        [Header("Connection Settings")]
-        [SerializeField] private string serverIp = "127.0.0.1";
+        [Header("Connection Settings")] [SerializeField]
+        private string serverIp = "127.0.0.1";
+
         [SerializeField] private int serverPort = 12346;
         [SerializeField] private bool ConnectToMatchmaker = false;
         [SerializeField] private int Timeout = 120;
 
-        [Header("Player Settings")] 
-        [SerializeField] private string playerName = "Player";
+        [Header("Player Settings")] [SerializeField]
+        private string playerName = "Player";
+
         [SerializeField] private int playerColor = 0;
         [SerializeField] private TMP_Text heartbeatText;
         [SerializeField] private GameResult gameResult;
@@ -36,22 +39,19 @@ namespace Network.ClientDir
             ACClientNetworkManager.SetInstance(_networkManager);
 
             _messageDispatcher = new ACClientMessageDispatcher();
-            _networkManager._messageDispatcher = _messageDispatcher; 
+            _networkManager._messageDispatcher = _messageDispatcher;
             _networkManager.ServerTimeout = Timeout;
             _networkManager.Init();
             AbstractMessageDispatcher.OnPingBroadcast += (ping) => { pingBroadcastText.text = ping; };
             ACClientMessageDispatcher.OnGameEnd += gameResult.OnGameResult;
             ACClientMessageDispatcher.OnHandshakeComplete += SetManager;
-            
         }
 
-        private void SetManager(ACGameManager gameManager)
+        private void SetManager(ACGameManager gameManager, FactionType localFaction)
         {
-            player.SetGameManager(gameManager);
+            player.SetGameManager(gameManager, localFaction);
             _networkManager.Initialized = true;
         }
-        
-
 
         public void ConnectToServer(IPAddress ip, int port, string pName, int color)
         {

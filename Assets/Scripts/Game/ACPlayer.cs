@@ -10,9 +10,9 @@ namespace Game
 
         private ACGameController gameController;
 
-        public void SetGameManager(ACGameManager manager)
+        public void SetGameManager(ACGameManager manager, FactionType faction)
         {
-            gameController = new ACGameController(unityView, manager, FactionType.Red);
+            gameController = new ACGameController(unityView, manager, faction);
         }
 
         private void Update()
