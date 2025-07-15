@@ -20,9 +20,9 @@ MonoBehaviour:
     rid: 5969487396338663641
   m_OverrideGlobalSceneList: 1
   m_Scenes:
-  - m_enabled: 0
-    m_path: Assets/Scenes/ClientScene.unity
   - m_enabled: 1
+    m_path: Assets/Scenes/ClientScene.unity
+  - m_enabled: 0
     m_path: Assets/Scenes/ACClientScene.unity
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:

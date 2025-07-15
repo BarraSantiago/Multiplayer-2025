@@ -14,7 +14,7 @@ namespace Network.ClientDir
         [Header("Connection Settings")] [SerializeField]
         private string serverIp = "127.0.0.1";
 
-        [SerializeField] private int serverPort = 12346;
+        [SerializeField] private int serverPort = 12345;
         [SerializeField] private bool ConnectToMatchmaker = false;
         [SerializeField] private int Timeout = 120;
 
