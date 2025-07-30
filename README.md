@@ -1,4 +1,4 @@
-# MultiplayerLib
+# Multiplayer Project
 
 A comprehensive C# networking library for real-time multiplayer games, built with Unity-like architecture and featuring advanced synchronization capabilities.
 
